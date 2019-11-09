@@ -1,169 +1,114 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import pymongo as pm
-from pprint import pprint
-import pandas as pd
-import json
+"""
+Created on Sat Nov  9 10:53:06 2019
+"""
+
+import pymongo as pm #import MongoClient only
+import matplotlib.pyplot as plt
 import time
 import datetime
-import matplotlib.pyplot as plt
 
-def main():
-    client = pm.MongoClient('bigdatadb.polito.it',
-                         ssl=True,
-                         authSource='carsharing',
-                         tlsAllowInvalidCertificates=True)
-    db = client['carsharing']
-    db.authenticate('ictts', 'Ictts16!')
+client = pm.MongoClient('bigdatadb.polito.it',
+ssl=True,
+authSource = 'carsharing',
+tlsAllowInvalidCertificates=True)
+db = client['carsharing'] #Choose the DB to use
+db.authenticate('ictts', 'Ictts16!')#, mechanism='MONGODB-CR') #authentication
+PermanentBookings = db['PermanentBookings'] # Collection for Car2go to use
 
-    Bookings_collection = db['PermanentBookings']
+start = "01/10/2017"
+start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
+end = "01/11/2017"
+end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
 
+city = "Torino"
+duration = []
+documents = 0
+count = 0
 
-    # new_index = Bookings_collection.create_index([("final_time", 1)])
-
-    start = "01/10/2017"
-    start = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
-    end = "01/11/2017"
-    end = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
-
-    start_gmt = start
-    end_gmt = end
-
-    print("Inizio:", start_gmt)
-    print("Fine:", end_gmt)
-    #
-    # res = Bookings_collection.count_documents({"city": "Torino",
-    #                                 "init_time":
-    #                                 {
-    #                                     '$gte': start_gmt,
-    #                                     '$lte': end_gmt
-    #                                 }
-    #                                 })
-    # print(res)
-
-    city = "Torino"
-    lista = []
-
-
-    pipe_v = list(Bookings_collection.aggregate([
-    {'$match':
-        {'$and':
-            [
-            {"city": city
-            },
-            {"init_time":
-                {'$gte': start_gmt,
-                 '$lte': end_gmt
-                }
-            }
-            ]
+my_collection = list(PermanentBookings.aggregate([
+    {'$match':{
+        '$and':[
+        {'city': city},
+        {'init_time': {'$gt': start_time, '$lt': end_time}}]
         }
     },
-    {'$project':
-        {
-            "_id": 0,
-            "init_time": 1,
-            "city": 1,
-            "duration": {
-                '$subtract': ['$final_time', '$init_time']
-                },
-            "origin_destination.coordinates": 1
+    {'$project':{
+        '_id':0,
+        'init_time': 1,
+        'duration': {'$subtract': ['$final_time','$init_time']},
+        'origin_destination.coordinates': 1
         }
+    },
+    {'$sort':{
+        'duration': 1
     }
-    ]))
-    print("OK")
-    time.sleep(5000)
+    }]))
 
+documents = len(my_collection)
 
-
-
-    tot_num = None
-    dur = 0
-    while True:
-        dur += 1
-        print(dur, "calcolo...")
-        pipe1 = Bookings_collection.aggregate([
-        {'$match':
-            {'$and':
-                [
-                {"city": city
-                },
-                {"init_time":
-                    {'$gte': start_gmt,
-                     '$lte': end_gmt
-                    }
-                }
-                ]
-            }
-        },
-        {'$project':
-            {
-                "_id": 0,
-                "init_time": 1,
-                "city": 1,
-                "duration": {
-                    '$subtract': ['$final_time', '$init_time']
-                    },
-                "origin_destination.coordinates": 1
-            }
-        },
-        {
-            '$group': {
-                "_id": {"$lt": ['$duration', dur*60]},
-                "count": {'$sum': 1}
-                }
-        }
-        ])
-        l = list(pipe1)
-
-        if tot_num == None:
-            tot_num = 0
-
-            for e in l:
-                tot_num = tot_num + e['count']
-
-            print(tot_num)
-
-        for e in l:
-            if e['_id'] == True:
-                lista.append(e['count'])
-                break
-            else:
-                lista.append(0)
-
-        if lista[-1] == tot_num:
+starting_point = 0
+how_many = 0
+cnt = 0
+while True:
+    count += 60
+    for i in range (starting_point,documents):
+        if my_collection[i]['duration'] < count:
+            how_many += 1
+        else:
+            starting_point = i
             break
+    duration.append(how_many)
+    #print(cnt)
+    cnt+=1
+    
+    if duration[-1] == documents:
+        break
 
-    plt.plot(dura, lista)
-    plt.show()
-    plt.xlabel('Duration')
+results = [x/documents for x in duration]
 
-    # pipe1 = Bookings_collection.aggregate([
-    # {
-    #     '$project':{
-    #         "city": 1,
-    #         "_id": 0,
-    #         "duration":{
-    #             '$subtract': ['$final_time', '$init_time']
-    #         }
-    #     }
-    # },
-    # {
-    # '$group':{
-    #     "_id": "city",
-    #     "count": {
-    #         '$sum': 1
-    #     }
-    #     }
-    # }
-    # ])
-    # l = list(pipe1)
-    # pprint(l[0])
+#%% Plots  
+plt.semilogx(range(len(duration)),results)
+#plt.plot(results)
+plt.xlabel('Minutes')
+plt.ylabel('CDF')
+plt.ylim([0, 1])
+plt.show()
 
-    # df = pd.DataFrame(list(res))
-    # print(df)
-    print("--- Fine ---")
-
-
-if __name__ == '__main__':
-    main()
+#while True:
+#    count += 60
+#    pipe1 = PermanentBookings.aggregate([
+#    {'$match':{
+#        '$and':[
+#        {'city': city},
+#        {'init_time': {'$gt': start_time, '$lt': end_time}}]
+#        }
+#    },
+#    {'$project':{
+#        '_id':0,
+#        'init_time': 1,
+#        'duration': {'$subtract': ['$final_time','$init_time']},
+#        'origin_destination.coordinates': 1
+#        }
+#    },
+#    {'$group':{
+#        '_id': {'$lt': ['$duration',count]},
+#        'count': {'$sum': 1}  
+#        }
+#    }
+#    ])
+#    
+#    my_list = list(pipe1)
+#    for element in my_list:
+#        if element['_id'] == True:
+#            duration.append(element['count'])
+#            break
+#        else:
+#            duration.append(0)
+#    
+#    if documents == 0:
+#        for element in my_list:
+#            documents += element['count']
+#    if duration[-1] == documents:
+#        break
