@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import pymongo as pm
 from pprint import pprint
 import pandas as pd
