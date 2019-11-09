@@ -9,13 +9,16 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 
+COLLECTION = 'PermanentBookings' # Name of the collection
+
+# Connection to database.
 client = pm.MongoClient('bigdatadb.polito.it',
-ssl=True,
-authSource = 'carsharing',
-tlsAllowInvalidCertificates=True)
+                        ssl=True,
+                        authSource='carsharing',
+                        tlsAllowInvalidCertificates=True)
 db = client['carsharing'] #Choose the DB to use
 db.authenticate('ictts', 'Ictts16!')#, mechanism='MONGODB-CR') #authentication
-PermanentBookings = db['PermanentBookings'] # Collection for Car2go to use
+PermanentBookings = db[COLLECTION] # Collection for Car2go to use
 
 start = "01/10/2017"
 start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
@@ -23,10 +26,13 @@ end = "01/11/2017"
 end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
 
 city = "Torino"
-duration = []
-documents = 0
+duration_list = []
+num_of_documents = 0
 count = 0
 
+# Pipeline:
+# Select only documents with city=Torino in October 2017, calculate duration,
+# sort by duration in ascending order
 my_collection = list(PermanentBookings.aggregate([
     {'$match':{
         '$and':[
@@ -46,30 +52,36 @@ my_collection = list(PermanentBookings.aggregate([
     }
     }]))
 
-documents = len(my_collection)
+num_of_documents = len(my_collection) # Number of documents
 
+# Points for grouping in CDF
 starting_point = 0
 how_many = 0
 cnt = 0
+
+# Calculate CDF
 while True:
     count += 60
-    for i in range (starting_point,documents):
+
+    for i in range (starting_point, num_of_documents):
+
         if my_collection[i]['duration'] < count:
             how_many += 1
+
         else:
             starting_point = i
             break
-    duration.append(how_many)
-    #print(cnt)
-    cnt+=1
-    
-    if duration[-1] == documents:
+
+    duration_list.append(how_many)
+    cnt += 1
+
+    if duration_list[-1] == num_of_documents:
         break
 
-results = [x/documents for x in duration]
+results = [x/num_of_documents for x in duration_list]
 
-#%% Plots  
-plt.semilogx(range(len(duration)),results)
+#%% Plots
+plt.semilogx(range(len(duration_list)),results)
 #plt.plot(results)
 plt.xlabel('Minutes')
 plt.ylabel('CDF')
@@ -94,11 +106,11 @@ plt.show()
 #    },
 #    {'$group':{
 #        '_id': {'$lt': ['$duration',count]},
-#        'count': {'$sum': 1}  
+#        'count': {'$sum': 1}
 #        }
 #    }
 #    ])
-#    
+#
 #    my_list = list(pipe1)
 #    for element in my_list:
 #        if element['_id'] == True:
@@ -106,7 +118,7 @@ plt.show()
 #            break
 #        else:
 #            duration.append(0)
-#    
+#
 #    if documents == 0:
 #        for element in my_list:
 #            documents += element['count']
