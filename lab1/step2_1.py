@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 
-COLLECTION = 'PermanentBookings' # Name of the collection
+COLLECTION = 'PermanentParkings' # Name of the collection
 
 # Connection to database.
 client = pm.MongoClient('bigdatadb.polito.it',
@@ -25,7 +25,7 @@ start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple
 end = "01/11/2017"
 end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
 
-city = "Torino"
+city = "Wien"
 duration_list = []
 num_of_documents = 0
 count = 0
@@ -42,9 +42,7 @@ my_collection = list(PermanentBookings.aggregate([
     },
     {'$project':{
         '_id':0,
-        'init_time': 1,
-        'duration': {'$subtract': ['$final_time','$init_time']},
-        'origin_destination.coordinates': 1
+        'duration': {'$subtract': ['$final_time','$init_time']}
         }
     },
     {'$sort':{
