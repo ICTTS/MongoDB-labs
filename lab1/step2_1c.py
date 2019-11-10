@@ -1,0 +1,195 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Nov 10 12:04:56 2019
+
+@author: Francesca
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov  9 10:53:06 2019
+"""
+
+import pymongo as pm #import MongoClient only
+import matplotlib.pyplot as plt
+import time
+import datetime
+
+COLLECTION = 'PermanentBookings' # Name of the collection
+
+# Connection to database.
+client = pm.MongoClient('bigdatadb.polito.it',
+                        ssl=True,
+                        authSource='carsharing',
+                        tlsAllowInvalidCertificates=True)
+db = client['carsharing'] #Choose the DB to use
+db.authenticate('ictts', 'Ictts16!')#, mechanism='MONGODB-CR') #authentication
+PermanentBookings = db[COLLECTION] # Collection for Car2go to use
+
+#Aggregation per days of the week
+#start = "01/10/2017"
+#end = "01/11/2017"
+#start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
+#end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
+#start_time_seattle = start_time -10*60*60
+#end_time_seattle = end_time -9*60*60
+#
+#city = "Seattle"
+#daysofweek = [1,2,3,4,5,6,7]
+#
+#for day in daysofweek:
+#    
+#    duration_list = []
+#    num_of_documents = 0
+#    seconds = 0
+#    
+#    if (city == "Seattle"):
+#        start_time = start_time_seattle
+#        end_time = end_time_seattle
+#    
+#    my_collection = list(PermanentBookings.aggregate([
+#            {'$match':{
+#                '$and':[
+#                {'city': city},
+#                {'init_time': {'$gte': start_time, '$lt': end_time}}]}
+#            },
+#            {'$project':{
+#                '_id':0,
+#                'init_date': 1,
+#                'duration': {'$subtract': ['$final_time','$init_time']},
+#                'dayOfWeek': {'$dayOfWeek': '$init_date'}
+#                }
+#            },
+#            {'$match':{
+#                'dayOfWeek': day
+#                }
+#            },
+#            {'$project':{
+#                'duration':1
+#                }
+#            },
+#        {'$sort':{
+#            'duration': 1
+#        }
+#    }]))
+#    
+#    num_of_documents = len(my_collection) # Number of documents
+#    
+#    # Points for grouping in CDF
+#    starting_point = 0
+#    how_many = 0
+#    
+#    # Calculate CDF
+#    while True:
+#        seconds += 60
+#    
+#        for i in range (starting_point, num_of_documents):
+#    
+#            if my_collection[i]['duration'] < seconds:
+#                how_many += 1
+#    
+#            else:
+#                starting_point = i
+#                break
+#    
+#        duration_list.append(how_many)
+#    
+#        if duration_list[-1] == num_of_documents:
+#            break
+#    
+#    results = [x/num_of_documents for x in duration_list]
+#    
+#    #%% Plots
+#    plt.semilogx(range(len(duration_list)),results)
+#    
+##plt.plot(results)
+#plt.xlabel('Minutes')
+#plt.ylabel('CDF')
+#plt.ylim([0, 1])
+#plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'])
+#plt.show()
+
+
+#Aggregation per weeks da fare
+start = "01/10/2017"
+start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
+start_time_seattle = start_time -10*60*60
+week_duration = 7*24*60*60
+end_time = start_time + week_duration
+end_time_seattle = start_time_seattle + week_duration
+
+city = "Torino"
+weeks = [1,2,3,4]
+
+for day in weeks:
+    
+    duration_list = []
+    num_of_documents = 0
+    seconds = 0
+    
+    if (city == "Seattle"):
+        start_time = start_time_seattle
+        end_time = end_time_seattle
+    
+    my_collection = list(PermanentBookings.aggregate([
+            {'$match':{
+                '$and':[
+                {'city': city},
+                {'init_time': {'$gte': start_time, '$lt': end_time}}]}
+            },
+            {'$project':{
+                '_id':0,
+                'init_date': 1,
+                'duration': {'$subtract': ['$final_time','$init_time']},
+                'dayOfWeek': {'$dayOfWeek': '$init_date'}
+                }
+            },
+            {'$match':{
+                'dayOfWeek': day
+                }
+            },
+            {'$project':{
+                'duration':1
+                }
+            },
+        {'$sort':{
+            'duration': 1
+        }
+    }]))
+    
+    num_of_documents = len(my_collection) # Number of documents
+    
+    # Points for grouping in CDF
+    starting_point = 0
+    how_many = 0
+    
+    # Calculate CDF
+    while True:
+        seconds += 60
+    
+        for i in range (starting_point, num_of_documents):
+    
+            if my_collection[i]['duration'] < seconds:
+                how_many += 1
+    
+            else:
+                starting_point = i
+                break
+    
+        duration_list.append(how_many)
+    
+        if duration_list[-1] == num_of_documents:
+            break
+    
+    results = [x/num_of_documents for x in duration_list]
+    
+    #%% Plots
+    plt.semilogx(range(len(duration_list)),results)
+    
+#plt.plot(results)
+plt.xlabel('Minutes')
+plt.ylabel('CDF')
+plt.ylim([0, 1])
+plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'])
+plt.show()
