@@ -3,6 +3,7 @@
 import pymongo as pm
 from pprint import pprint
 import pandas as pd
+import time
 import datetime
 
 client = pm.MongoClient('bigdatadb.polito.it', ssl=True,
@@ -37,18 +38,27 @@ for i in start_unix:
 for i in end_unix:
     end = i['init_time']
 
-print("\n- When the collection started? When the collection ended?")
-print("start:", datetime.datetime.utcfromtimestamp(start).strftime('%d-%m-%Y '
-                                                                   '%H:%M:%S'))
-print("end  :", datetime.datetime.utcfromtimestamp(end).strftime('%d-%m-%Y '
-                                                                 '%H:%M:%S'))
+print("start: {} end: {}".format(start, end))  # Tuesday 13 December 2016 17:38:23 Wednesday 31 January 2018 13:11:33
+print("start: {} end: {}".format(time.ctime(start), time.ctime(end)))
+# print("edu purpose : ", time.time(), ' ', time.gmtime(start))
+# 12/13/2016 @ 5:38pm (UTC) UK time
+# 12/13/2016 @ 6:38pm (UTC) IT time
+city = ['Torino', 'Wien', 'Seattle']
 
-print("\n- How many cars are available?")
-print(active_parkings.count_documents({"city": "Torino"}))
-print(active_parkings.count_documents({"city": "Wien"}))
-print(active_parkings.count_documents({"city": "Seattle"}))
+for i in city:
+    available = active_parkings.distinct('plate', {'city': i})
+    print('available cars in ', i, ' are : ', len(available))
 
-print("\n- How many cars are available? (distinct plate)")
-print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))
-print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))
-print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))
+start_date = "01/12/2017"
+start_time = time.mktime(datetime.datetime.strptime(start_date, "%d/%m/%Y").timetuple())
+print(start_time)
+end_date = "01/1/2018"
+end_time = time.mktime(datetime.datetime.strptime(end_date, "%d/%m/%Y").timetuple())
+print(end_time)
+for i in city:
+    dec_city = permanent_bookings.find({'city': i},
+                                       {'init_time': {'$gte': start_time, '$lt': end_time}}).count()
+
+    print('booking on december 2017 in ', i, ' are: ', dec_city)
+
+# TODO alternative modes only for turin
