@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Nov  9 10:53:06 2019
+Step 2.1.c
 """
-
 import pymongo as pm #import MongoClient only
 import matplotlib.pyplot as plt
 import time

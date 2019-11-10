@@ -1,14 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Nov 10 15:36:31 2019
-
-@author: Francesca
-"""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Nov  9 10:53:06 2019
+Created on Sun Nov 10 15:36:31 2019
+Step 2.3
 """
 import pymongo as pm
 import matplotlib.pyplot as plt
@@ -80,7 +74,7 @@ for coll in COLLECTION:
                     'duration': 1
                 }
                 }]))
-    
+
         elif coll == 'PermanentParkings':
                     my_collection = list(collection.aggregate([
             {'$match':{
@@ -103,7 +97,7 @@ for coll in COLLECTION:
                 'duration': 1
             }
             }]))
-            
+
         num_of_documents = len(my_collection) # Number of documents
 
         # Points for grouping in CDF

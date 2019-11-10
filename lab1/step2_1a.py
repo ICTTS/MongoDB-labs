@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Nov  9 10:53:06 2019
+Step 2.1.a
 """
 import pymongo as pm
 import matplotlib.pyplot as plt
