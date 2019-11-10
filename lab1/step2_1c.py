@@ -10,6 +10,7 @@ import time
 import datetime
 
 COLLECTION = 'PermanentBookings' # Name of the collection
+CITY = "Torino"
 
 
 def get_collection():
@@ -34,7 +35,6 @@ def days_aggregate():
     start_time_seattle = start_time -10*60*60
     end_time_seattle = end_time -9*60*60
 
-    city = "Seattle"
     daysofweek = [1,2,3,4,5,6,7]
 
     for day in daysofweek:
@@ -43,19 +43,18 @@ def days_aggregate():
        num_of_documents = 0
        seconds = 0
 
-       if (city == "Seattle"):
+       if (CITY == "Seattle"):
            start_time = start_time_seattle
            end_time = end_time_seattle
 
        my_collection = list(collection.aggregate([
                {'$match':{
                    '$and':[
-                   {'city': city},
+                   {'city': CITY},
                    {'init_time': {'$gte': start_time, '$lt': end_time}}]}
                },
                {'$project':{
                    '_id':0,
-                   'init_date': 1,
                    'duration': {'$subtract': ['$final_time','$init_time']},
                    'dayOfWeek': {'$dayOfWeek': '$init_date'}
                    }
@@ -118,7 +117,6 @@ def weeks_aggregate():
     end_time = start_time + week_duration
     end_time_seattle = start_time_seattle + week_duration
 
-    city = "Torino"
     weeks = [1, 2, 3, 4]
 
     for week in weeks:
@@ -127,19 +125,18 @@ def weeks_aggregate():
         num_of_documents = 0
         seconds = 0
 
-        if (city == "Seattle"):
+        if (CITY == "Seattle"):
             start_time = start_time_seattle
             end_time = end_time_seattle
 
         my_collection = list(collection.aggregate([
                 {'$match':{
                     '$and':[
-                    {'city': city},
+                    {'city': CITY},
                     {'init_time': {'$gte': start_time, '$lt': end_time}}]}
                 },
                 {'$project':{
                     '_id':0,
-                    'init_date': 1,
                     'duration': {'$subtract': ['$final_time','$init_time']}
                     }
                 },
