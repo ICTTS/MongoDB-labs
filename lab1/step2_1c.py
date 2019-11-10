@@ -13,7 +13,7 @@ COLLECTION = 'PermanentBookings' # Name of the collection
 
 
 def get_collection():
-    # Connection to database.
+    """Connection to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -25,7 +25,7 @@ def get_collection():
 
 
 def days_aggregate():
-    # Aggregation per days of the week
+    """Aggregation per days of the week."""
     collection = get_collection()
     start = "01/10/2017"
     end = "01/11/2017"
@@ -99,10 +99,8 @@ def days_aggregate():
 
        results = [x/num_of_documents for x in duration_list]
 
-       #%% Plots
        plt.semilogx(range(len(duration_list)),results)
 
-    #plt.plot(results)
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
     plt.ylim([0, 1])
@@ -111,7 +109,7 @@ def days_aggregate():
     plt.show()
 
 def weeks_aggregate():
-    # Aggregation per weeks.
+    """Aggregation per weeks."""
     collection = get_collection()
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
@@ -183,10 +181,8 @@ def weeks_aggregate():
 
         results = [x/num_of_documents for x in duration_list]
 
-        #%% Plots
         plt.semilogx(range(len(duration_list)),results)
 
-    #plt.plot(results)
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
     plt.ylim([0, 1])
