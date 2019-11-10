@@ -1,6 +1,8 @@
 import pymongo as pm
 from pprint import pprint
 import pandas as pd
+import time
+import datetime
 
 client = pm.MongoClient('bigdatadb.polito.it', ssl=True, authSource='carsharing', tlsAllowInvalidCertificates=True)
 
@@ -18,8 +20,9 @@ print("active bookings: ", active_bookings.estimated_document_count())
 print("active parkings: ", active_parkings.estimated_document_count())
 
 # permanent booking and parking similar because of tot n of cars ideally one car should be booked then parked.
-
-print("distinct cities: ", permanent_bookings.distinct('city'))
+list_of_city = permanent_bookings.distinct('city')
+print("distinct cities: ", list_of_city)
+print("tot distinct cities: ", len(list_of_city))
 
 start_unix = permanent_bookings.find().sort('init_time', 1).limit(1)
 end_unix = permanent_bookings.find().sort('init_time', -1).limit(1)
@@ -31,8 +34,26 @@ for i in end_unix:
     end = i['init_time']
 
 print("start: {} end: {}".format(start, end))  # Tuesday 13 December 2016 17:38:23 Wednesday 31 January 2018 13:11:33
+print("start: {} end: {}".format(time.ctime(start), time.ctime(end)))
+# print("edu purpose : ", time.time(), ' ', time.gmtime(start))
+# 12/13/2016 @ 5:38pm (UTC) UK time
+# 12/13/2016 @ 6:38pm (UTC) IT time
+city = ['Torino', 'Wien', 'Seattle']
 
+for i in city:
+    available = active_parkings.distinct('plate', {'city': i})
+    print('available cars in ', i, ' are : ', len(available))
 
+start_date = "01/12/2017"
+start_time = time.mktime(datetime.datetime.strptime(start_date, "%d/%m/%Y").timetuple())
+print(start_time)
+end_date = "01/1/2018"
+end_time = time.mktime(datetime.datetime.strptime(end_date, "%d/%m/%Y").timetuple())
+print(end_time)
+for i in city:
+    dec_city = permanent_bookings.find({'city': i},
+                                       {'init_time': {'$gte': start_time, '$lt': end_time}}).count()
 
+    print('booking on december 2017 in ', i, ' are: ', dec_city)
 
-
+# TODO alternative modes only for turin
