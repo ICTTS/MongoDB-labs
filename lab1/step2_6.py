@@ -22,13 +22,20 @@ def get_collection():
 def main():
     collection = get_collection()
     my_collection = list(collection.aggregate(
-    [
-        {'$match':{'city':CITY }},
-        {'$project':{'_id':0,
-                     'loc':1,
-                     'hour_of_day': {'$hour': '$init_date'}
-                     }}
-    ]))
+        [
+            {'$match': {'city': CITY}},
+            {'$project': {'_id': 0,
+                          'loc': 1,
+                          'hour_of_day': {'$hour': '$init_date'}
+                          }}
+        ]))
+    data = []
+    for i in my_collection:
+        data.append([i['loc']['coordinates'][0], i['loc']['coordinates'][1], i['hour_of_day']])
+
+    
+    df = pd.DataFrame(data, columns=['Latitude', 'Longitude', 'Hour'])
+    df.to_csv('hearmap.csv', mode='w')
 
 if __name__ == '__main__':
     main()
