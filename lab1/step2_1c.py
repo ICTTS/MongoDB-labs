@@ -111,7 +111,7 @@ PermanentBookings = db[COLLECTION] # Collection for Car2go to use
 #plt.show()
 
 
-#Aggregation per weeks da fare
+#Aggregation per weeks
 start = "01/10/2017"
 start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
 start_time_seattle = start_time -10*60*60
@@ -158,6 +158,9 @@ for day in weeks:
         }
     }]))
     
+    start_time = end_time
+    end_time += week_duration
+    
     num_of_documents = len(my_collection) # Number of documents
     
     # Points for grouping in CDF
@@ -191,5 +194,5 @@ for day in weeks:
 plt.xlabel('Minutes')
 plt.ylabel('CDF')
 plt.ylim([0, 1])
-plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'])
+plt.legend(['week 1', 'week 2', 'week 3', 'week 4'])
 plt.show()
