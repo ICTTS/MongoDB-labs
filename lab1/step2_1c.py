@@ -39,66 +39,66 @@ def days_aggregate():
 
     for day in daysofweek:
 
-       duration_list = []
-       num_of_documents = 0
-       seconds = 0
+        duration_list = []
+        num_of_documents = 0
+        seconds = 0
 
-       if (CITY == "Seattle"):
-           start_time = start_time_seattle
-           end_time = end_time_seattle
+        if (CITY == "Seattle"):
+            start_time = start_time_seattle
+            end_time = end_time_seattle
 
-       my_collection = list(collection.aggregate([
-               {'$match':{
-                   '$and':[
-                   {'city': CITY},
-                   {'init_time': {'$gte': start_time, '$lt': end_time}}]}
-               },
-               {'$project':{
-                   '_id':0,
-                   'duration': {'$subtract': ['$final_time','$init_time']},
-                   'dayOfWeek': {'$dayOfWeek': '$init_date'}
-                   }
-               },
-               {'$match':{
-                   'dayOfWeek': day
-                   }
-               },
-               {'$project':{
-                   'duration':1
-                   }
-               },
-           {'$sort':{
-               'duration': 1
-           }
-       }]))
+        my_collection = list(collection.aggregate([
+                {"$match":{
+                    "$and":[
+                    {"city": CITY},
+                    {"init_time": {"$gte": start_time, "$lt": end_time}}]}
+                },
+                {"$project":{
+                    "_id":0,
+                    "duration": {"$subtract": ["$final_time","$init_time"]},
+                    "dayOfWeek": {"$dayOfWeek": "$init_date"}
+                    }
+                },
+                {"$match":{
+                    "dayOfWeek": day
+                    }
+                },
+                {"$project":{
+                    "duration":1
+                    }
+                },
+            {"$sort":{
+                "duration": 1
+            }
+        }]))
 
-       num_of_documents = len(my_collection) # Number of documents
+        num_of_documents = len(my_collection) # Number of documents
 
-       # Points for grouping in CDF
-       starting_point = 0
-       how_many = 0
+        # Points for grouping in CDF
+        starting_point = 0
+        how_many = 0
 
-       # Calculate CDF
-       while True:
-           seconds += 60
+        # Calculate CDF
+        while True:
+            seconds += 60
 
-           for i in range (starting_point, num_of_documents):
+            for i in range (starting_point, num_of_documents):
 
-               if my_collection[i]['duration'] < seconds:
-                   how_many += 1
+                if my_collection[i]['duration'] < seconds:
+                    how_many += 1
 
-               else:
-                   starting_point = i
-                   break
+                else:
+                    starting_point = i
+                    break
 
-           duration_list.append(how_many)
+            duration_list.append(how_many)
 
-           if duration_list[-1] == num_of_documents:
-               break
+            if duration_list[-1] == num_of_documents:
+                break
 
-       results = [x/num_of_documents for x in duration_list]
+        results = [x/num_of_documents for x in duration_list]
 
-       plt.semilogx(range(len(duration_list)),results)
+        plt.semilogx(range(len(duration_list)),results)
 
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
