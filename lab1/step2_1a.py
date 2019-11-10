@@ -101,41 +101,4 @@ for coll in COLLECTION:
     plt.title(coll)
     plt.show()
 
-#while True:
-#    minutes_counter += 60
-#    pipe1 = collection.aggregate([
-#    {'$match':{
-#        '$and':[
-#        {'city': city},
-#        {'init_time': {'$gt': start_time, '$lt': end_time}}]
-#        }
-#    },
-#    {'$project':{
-#        '_id':0,
-#        'init_time': 1,
-#        'duration': {'$subtract': ['$final_time','$init_time']},
-#        'origin_destination.coordinates': 1
-#        }
-#    },
-#    {'$group':{
-#        '_id': {'$lt': ['$duration',minutes_counter]},
-#        'count': {'$sum': 1}
-#        }
-#    }
-#    ])
-#
-#    my_list = list(pipe1)
-#    for element in my_list:
-#        if element['_id'] == True:
-#            duration.append(element['count'])
-#            break
-#        else:
-#            duration.append(0)
-#
-#    if documents == 0:
-#        for element in my_list:
-#            documents += element['count']
-#    if duration[-1] == documents:
-#        break
-
 print("--- END ---")
