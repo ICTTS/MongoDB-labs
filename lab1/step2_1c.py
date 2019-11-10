@@ -116,7 +116,7 @@ end_time_seattle = start_time_seattle + week_duration
 city = "Torino"
 weeks = [1,2,3,4]
 
-for day in weeks:
+for week in weeks:
 
     duration_list = []
     num_of_documents = 0
@@ -135,12 +135,7 @@ for day in weeks:
             {'$project':{
                 '_id':0,
                 'init_date': 1,
-                'duration': {'$subtract': ['$final_time','$init_time']},
-                'dayOfWeek': {'$dayOfWeek': '$init_date'}
-                }
-            },
-            {'$match':{
-                'dayOfWeek': day
+                'duration': {'$subtract': ['$final_time','$init_time']}
                 }
             },
             {'$project':{
