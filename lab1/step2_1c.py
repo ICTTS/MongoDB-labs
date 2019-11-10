@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Nov 10 12:04:56 2019
-
-@author: Francesca
-"""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -39,15 +32,15 @@ PermanentBookings = db[COLLECTION] # Collection for Car2go to use
 #daysofweek = [1,2,3,4,5,6,7]
 #
 #for day in daysofweek:
-#    
+#
 #    duration_list = []
 #    num_of_documents = 0
 #    seconds = 0
-#    
+#
 #    if (city == "Seattle"):
 #        start_time = start_time_seattle
 #        end_time = end_time_seattle
-#    
+#
 #    my_collection = list(PermanentBookings.aggregate([
 #            {'$match':{
 #                '$and':[
@@ -73,41 +66,42 @@ PermanentBookings = db[COLLECTION] # Collection for Car2go to use
 #            'duration': 1
 #        }
 #    }]))
-#    
+#
 #    num_of_documents = len(my_collection) # Number of documents
-#    
+#
 #    # Points for grouping in CDF
 #    starting_point = 0
 #    how_many = 0
-#    
+#
 #    # Calculate CDF
 #    while True:
 #        seconds += 60
-#    
+#
 #        for i in range (starting_point, num_of_documents):
-#    
+#
 #            if my_collection[i]['duration'] < seconds:
 #                how_many += 1
-#    
+#
 #            else:
 #                starting_point = i
 #                break
-#    
+#
 #        duration_list.append(how_many)
-#    
+#
 #        if duration_list[-1] == num_of_documents:
 #            break
-#    
+#
 #    results = [x/num_of_documents for x in duration_list]
-#    
+#
 #    #%% Plots
 #    plt.semilogx(range(len(duration_list)),results)
-#    
+#
 ##plt.plot(results)
 #plt.xlabel('Minutes')
 #plt.ylabel('CDF')
 #plt.ylim([0, 1])
-#plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'])
+#plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'], loc=4)
+# plt.grid(which='both')
 #plt.show()
 
 
@@ -123,15 +117,15 @@ city = "Torino"
 weeks = [1,2,3,4]
 
 for day in weeks:
-    
+
     duration_list = []
     num_of_documents = 0
     seconds = 0
-    
+
     if (city == "Seattle"):
         start_time = start_time_seattle
         end_time = end_time_seattle
-    
+
     my_collection = list(PermanentBookings.aggregate([
             {'$match':{
                 '$and':[
@@ -157,42 +151,43 @@ for day in weeks:
             'duration': 1
         }
     }]))
-    
+
     start_time = end_time
     end_time += week_duration
-    
+
     num_of_documents = len(my_collection) # Number of documents
-    
+
     # Points for grouping in CDF
     starting_point = 0
     how_many = 0
-    
+
     # Calculate CDF
     while True:
         seconds += 60
-    
+
         for i in range (starting_point, num_of_documents):
-    
+
             if my_collection[i]['duration'] < seconds:
                 how_many += 1
-    
+
             else:
                 starting_point = i
                 break
-    
+
         duration_list.append(how_many)
-    
+
         if duration_list[-1] == num_of_documents:
             break
-    
+
     results = [x/num_of_documents for x in duration_list]
-    
+
     #%% Plots
     plt.semilogx(range(len(duration_list)),results)
-    
+
 #plt.plot(results)
 plt.xlabel('Minutes')
 plt.ylabel('CDF')
 plt.ylim([0, 1])
-plt.legend(['week 1', 'week 2', 'week 3', 'week 4'])
+plt.legend(['week 1', 'week 2', 'week 3', 'week 4'], loc=4)
+plt.grid(which='both')
 plt.show()
