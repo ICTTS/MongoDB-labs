@@ -10,7 +10,7 @@ import time
 import datetime
 
 COLLECTION = 'PermanentBookings' # Name of the collection
-CITY = "Torino"
+CITY_LIST = ["Torino","Wien","Seattle"]
 
 
 def get_collection():
@@ -25,54 +25,60 @@ def get_collection():
     return collection
 
 def hours_aggregate():
-    """Aggregation per days of the week."""
+    """Aggregation per hours of the day."""
     collection = get_collection()
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
     day_duration = 24*60*60
-    end_time = start_time + day_duration
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
     days = list(range(7))
-    number_of_rentals = []
+    
+    for city in CITY_LIST:
+        number_of_rentals = []
+        time1 = start_time
+        time2 = start_time + day_duration
 
-    for day in days:
+        for day in days:
+        
+           if (city == "Seattle"):
+               time1 = start_time_seattle
+               time2 = end_time_seattle
     
-       if (CITY == "Seattle"):
-           start_time = start_time_seattle
-           end_time = end_time_seattle
-
-       my_collection = list(collection.aggregate([
-               {'$match':{
-                   '$and':[
-                   {'city': CITY},
-                   {'init_time': {'$gte': start_time, '$lt': end_time}}]}
-               },
-               {'$project':{
-                   '_id': 0,
-                   'hour_of_day': {'$hour': '$init_date'}
-                   }
-               },
-               {'$group':{
-                   '_id': "$hour_of_day",
-                   'total': {"$sum": 1} 
-               }}
-       ]))
+           my_collection = list(collection.aggregate([
+                   {'$match':{
+                       '$and':[
+                       {'city': city},
+                       {'init_time': {'$gte': time1, '$lt': time2}}]}
+                   },
+                   {'$project':{
+                       '_id': 0,
+                       'hour_of_day': {'$hour': '$init_date'}
+                       }
+                   },
+                   {'$group':{
+                       '_id': "$hour_of_day",
+                       'total': {"$sum": 1} 
+                   }},
+                   {'$sort':{
+                           '_id': 1
+                           }}
+                           
+           ]))
+        
+           time1 = time2
+           time2 = time2 + day_duration
+        
+           for el in my_collection:
+             number_of_rentals.append(el['total'])
+        
+        plt.plot(number_of_rentals)
     
-       start_time = end_time
-       end_time = end_time + day_duration
-    
-       for el in my_collection:
-         number_of_rentals.append(el['total'])
-    
-    #plt.semilogx(range(len(duration_list)),results)
-    plt.plot(number_of_rentals)
-    
-    #plt.xlabel('Minutes')
-    #plt.ylabel('CDF')
-    #plt.ylim([0, 1])
-    #plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'], loc=4)
+    #da sistemare etichette carine asse x con le mezzanotti dei vari giorni
+    plt.xlabel('Hours per day')
+    plt.ylabel('No. of bookings')
+    plt.legend(CITY_LIST, loc=1)
     plt.grid(which='both')
     plt.show()
 
