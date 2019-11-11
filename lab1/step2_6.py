@@ -35,7 +35,11 @@ def main():
 
     
     df = pd.DataFrame(data, columns=['Latitude', 'Longitude', 'Hour'])
-    df.to_csv('hearmap.csv', mode='w')
+
+    # TODO partizione mattino pomeriggio sera notte
+    intervallo = 'mattino'
+    filename = 'heatmap'+intervallo+'.csv'
+    df.to_csv(filename, mode='w')
 
 if __name__ == '__main__':
     main()
