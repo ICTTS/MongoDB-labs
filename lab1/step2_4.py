@@ -40,7 +40,7 @@ def days_aggregate():
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
-    days = list(range(7))
+    days = list(range(15))
     
     low_limit = 2*60  # Two minutes
     high_limit= 3*60*60  # Three hours

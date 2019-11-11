@@ -33,7 +33,7 @@ def hours_aggregate():
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
-    days = list(range(7))
+    days = list(range(15))
     
     for city in CITY_LIST:
         number_of_rentals = []
