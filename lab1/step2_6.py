@@ -36,14 +36,19 @@ def main():
     df = pd.DataFrame(data, columns=['Latitude', 'Longitude', 'Hour'])
 
     # TODO partizione mattino pomeriggio sera notte
-    df_6_12 = df[df['Hour'] >= 6 and df['Hour'] < 12]
-    df_12_18 = df[df['Hour'] >= 12 and df['Hour'] < 18]
-    df_18_24 = df[df['Hour'] >= 18 and df['Hour'] < 24]
-    df_0_6 = df[df['Hour'] >= 0 and df['Hour'] < 6]
-    df_6_12.to_csv('mattino.csv', mode='w')
-    df_12_18.to_csv('pomeriggio.csv', mode='w')
-    df_18_24.to_csv('sera.csv', mode='w')
-    df_0_6.to_csv('notte.csv', mode='w')
+    mattino = list(range(6, 12))
+    pomeriggio = list(range(12, 18))
+    sera = list(range(18, 24))
+    notte = list(range(0, 6))
+    df_mattino = df[df.Hour.isin(mattino)]
+    df_pomeriggio = df[df.Hour.isin(pomeriggio)]
+    df_sera = df[df.Hour.isin(sera)]
+    df_notte = df[df.Hour.isin(notte)]
+    df_mattino.to_csv('mattino.csv', mode='w')
+    df_pomeriggio.to_csv('pomeriggio.csv', mode='w')
+    df_sera.to_csv('sera.csv', mode='w')
+    df_notte.to_csv('notte.csv', mode='w')
+
 
 if __name__ == '__main__':
     main()
