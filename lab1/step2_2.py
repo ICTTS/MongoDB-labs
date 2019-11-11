@@ -78,6 +78,9 @@ def hours_aggregate():
     #da sistemare etichette carine asse x con le mezzanotti dei vari giorni
     plt.xlabel('Hours per day')
     plt.ylabel('No. of bookings')
+    plt.xticks(ticks=[0, 120, 240, 360], labels=['Oct 1,2017', 'Oct 6, 2017',
+               'Oct 11,2017', 'Oct 16, 2017'],
+            rotation='horizontal')
     plt.legend(CITY_LIST, loc=1)
     plt.grid(which='both')
     plt.show()

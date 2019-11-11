@@ -48,13 +48,12 @@ def days_aggregate():
         number_of_rentals = []
         time1 = start_time
         time2 = start_time + day_duration
+
+        if (city == "Seattle"):
+            time1 = start_time_seattle
+            time2 = end_time_seattle
     
-        for day in days:
-        
-           if (city == "Seattle"):
-               start_time = start_time_seattle
-               end_time = end_time_seattle
-    
+        for day in days:   
            my_collection = list(collection.aggregate([
                    {'$match':{
                        '$and':[
@@ -96,6 +95,9 @@ def days_aggregate():
     #da sistemare etichette carine asse x con le mezzanotti dei vari giorni
     plt.xlabel('Hours per day')
     plt.ylabel('No. of bookings')
+    plt.xticks(ticks=[0, 120, 240, 360], labels=['Oct 1,2017', 'Oct 6, 2017',
+           'Oct 11,2017', 'Oct 16, 2017'],
+        rotation='horizontal')
     plt.legend(CITY_LIST, loc=1)
     plt.grid(which='both')
     plt.show()
