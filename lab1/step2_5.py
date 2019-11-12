@@ -42,8 +42,10 @@ def actual_rentals(collection, city, start_time, end_time):
                     '_id':0,
                     'duration': {'$subtract': ['$final_time','$init_time']},
                     'moved': {'$ne': [
-                            {'$arrayElemAt': ['$origin_destination.coordinates', 0]},
-                            {'$arrayElemAt': ['$origin_destination.coordinates', 1]}]}
+                            {'$arrayElemAt': ['$origin_destination.coordinates',
+                                              0]},
+                            {'$arrayElemAt': ['$origin_destination.coordinates',
+                                              1]}]}
                     }
                 },
                 {'$match':
@@ -61,10 +63,10 @@ def actual_rentals(collection, city, start_time, end_time):
                 'std': {'$stdDevSamp': '$duration'},
                 "durationArray": {"$push": "$duration"}}
                 }]))
-    
+
     return my_collection[0]
- 
-    
+
+
 def actual_parkings(collection, city, start_time, end_time):
     my_collection = list(collection.aggregate([
             {'$match':{
@@ -92,67 +94,84 @@ def actual_parkings(collection, city, start_time, end_time):
             'std': {'$stdDevSamp': '$duration'},
             "durationArray": {"$push": "$duration"}}
             }]))
-    
+
     return my_collection[0]
-    
+
 def loop():
-    
+
     days_list = list(range(31))
-    start = "01/10/2017"    
-    start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
+    start = "01/10/2017"
+    start_time = time.mktime(datetime.datetime.strptime(start,
+                             "%d/%m/%Y").timetuple())
     day_duration = 24*60*60
     end_time = start_time + day_duration
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
-    
+
     for coll in COLLECTION:
         collection = get_collection(coll)
-        
+
         for city in CITY_LIST:
-            
+
             mean_vector = []
             median_vector = []
             std_vector = []
             percentile_vector = []
-            
+
             time1 = start_time
             time2 = end_time
-    
+
             if (city == "Seattle"):
                 time1 = start_time_seattle
                 time2 = end_time_seattle
-            
+
             for day in days_list:
-                
+
                 if coll == 'PermanentBookings':
                     new_coll = actual_rentals(collection, city, time1, time2)
                 elif coll == 'PermanentParkings':
                     new_coll = actual_parkings(collection, city, time1, time2)
-                    
+
                 mean = new_coll['mean']
                 std = new_coll['std']
-                median = np.percentile(new_coll['durationArray'],50)
-                percentile = np.percentile(new_coll['durationArray'],80)
-                
+                median = np.percentile(new_coll['durationArray'], 50)
+                percentile = np.percentile(new_coll['durationArray'], 80)
+
                 mean_vector.append(mean)
                 std_vector.append(std)
                 median_vector.append(median)
                 percentile_vector.append(percentile)
-                    
+
                 time1 = time2
                 time2 = time2 + day_duration
-            
+
             # vorrei il grafico carino in particolare: etichette sugli assi (x giorni da 1 a 31),
             #linee più carine, std stampata come scritto sotto, legenda carina, grafico magari un poco più
             # largo che si veda meglio (questo anche negli altri punti 2.2 e 2.4) in cui stampiamo su 31 giorni
             # e vorrei che venga un grafico per città aggiungendo le altre due in alto nella CITY_LIST e che si veda nel titolo magari
-            
-            plt.figure()
-            plt.plot(mean_vector)
-            plt.plot(std_vector) # sarebbe forse meglio fare mean + std e mean - std tratteggiate in rosso tipo
-            plt.plot(median_vector)
-            plt.plot(percentile_vector)
+
+            plt.figure(figsize=(9, 4))
+            plt.plot(mean_vector, 'r')
+            x_ticks = range(0,31)
+            x_labels = range(1,32)
+            plt.xticks(ticks=x_ticks, labels=x_labels)
+            plt.plot(std_vector, 'b') # sarebbe forse meglio fare mean + std e mean - std tratteggiate in rosso tipo
+            plt.plot(median_vector, 'g')
+            plt.plot(percentile_vector, 'c')
+            plt.grid(which='both')
+            plt.xlabel("Day")
+            plt.ylabel("Minutes")
+            plt.legend(["Mean", "Std", "Median", "Percentile"])
+            mean_plus = [float(i) + float(j) for i, j in zip(mean_vector,
+                                                             std_vector)]
+            mean_minus = [float(i) - float(j) for i, j in zip(mean_vector,
+                                                              std_vector)]
+            plt.plot(mean_plus, 'r--')
+            plt.plot(mean_minus, 'r--')
+            # plt.plot(list(set(mean_vector) - set(std_vector)), 'r--')
             plt.title(coll)
+            plt.show()
+
 
 def main():
     loop()
