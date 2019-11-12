@@ -5,12 +5,6 @@ Created on Sun Nov 10 16:53:07 2019
 Step 2.4
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Nov  9 10:53:06 2019
-Step 2.2
-"""
 import pymongo as pm #import MongoClient only
 import matplotlib.pyplot as plt
 import time
@@ -31,7 +25,7 @@ def get_collection():
     collection = db[COLLECTION]
     return collection
 
-def days_aggregate():
+def hours_aggregate():
     """Aggregation per hours of the day."""
     collection = get_collection()
     start = "01/10/2017"
@@ -40,7 +34,7 @@ def days_aggregate():
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
-    days = list(range(15))
+    days = list(range(31))
     
     low_limit = 2*60  # Two minutes
     high_limit= 3*60*60  # Three hours
@@ -104,7 +98,7 @@ def days_aggregate():
 
 
 def main():
-    days_aggregate()
+    hours_aggregate()
 
 
 if __name__ == '__main__':
