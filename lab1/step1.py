@@ -21,6 +21,8 @@ permanent_parkings = db['PermanentParkings']
 active_bookings = db['ActiveBookings']
 active_parkings = db['ActiveParkings']
 
+city = ['Torino', 'Wien', 'Seattle']
+
 print("- How many documents are present in each collection?")
 print("permanent bookings: ", permanent_bookings.estimated_document_count())
 print("permanent parkings: ", permanent_parkings.estimated_document_count())
@@ -46,20 +48,21 @@ print("start:", datetime.datetime.utcfromtimestamp(start).strftime('%d-%m-%Y '
                                                                    '%H:%M:%S'))
 print("end  :", datetime.datetime.utcfromtimestamp(end).strftime('%d-%m-%Y '
                                                                  '%H:%M:%S'))
-
+                                                                 
 print("\n- How many cars are available?")
 print(active_parkings.count_documents({"city": "Torino"}))
 print(active_parkings.count_documents({"city": "Wien"}))
 print(active_parkings.count_documents({"city": "Seattle"}))
-city = ['Torino', 'Wien', 'Seattle']
 for i in city:
     available = active_parkings.distinct('plate', {'city': i})
     print('available cars in ', i, ' are : ', len(available))
 
 print("\n- How many cars are available? (distinct plate)")
-print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))
-print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))
-print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))
+print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))  #
+print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))  #
+print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))  #
+
+
 
 # print("edu purpose : ", time.time(), ' ', time.gmtime(start))
 # 12/13/2016 @ 5:38pm (UTC) UK time
@@ -67,15 +70,30 @@ print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))
 
 print("\n- Bookings on December 2017?")
 
-
 start_date = "01/12/2017"
 start_time = time.mktime(datetime.datetime.strptime(start_date, "%d/%m/%Y").timetuple())
 end_date = "01/1/2018"
 end_time = time.mktime(datetime.datetime.strptime(end_date, "%d/%m/%Y").timetuple())
 for i in city:
     dec_city = permanent_bookings.find({'city': i,
-                                       'init_time': {'$gte': start_time, '$lt': end_time}})
+                                        'init_time': {'$gte': start_time, '$lt': end_time}})
 
     print('booking on december 2017 in ', i, ' are: ', len(list(dec_city)))
 
-# TODO alternative modes only for turin
+
+# TODO alternative modes only for turin and wien
+torino_alternativo = list(permanent_bookings.aggregate([
+    {'$match': {'$and': [
+        {'city': 'Torino'}, {'walking.duration': {'$ne': -1}}, {'public_transport.duration': {'$ne': -1}}
+    ]}},
+    {'$project': {'_id': 0}}
+]))
+wien_alternativo = list(permanent_bookings.aggregate([
+    {'$match': {'$and': [
+        {'city': 'Wien'}, {'walking.duration': {'$ne': -1}}, {'public_transport.duration': {'$ne': -1}}
+    ]}},
+    {'$project': {'_id': 0}}
+]))
+
+print('alternative booking in turin was : ', len(torino_alternativo))
+print('alternative booking in wien was : ', len(wien_alternativo))
