@@ -146,32 +146,43 @@ def loop():
                 time1 = time2
                 time2 = time2 + day_duration
 
-            fig, ax = plt.subplots(constrained_layout=False, figsize=(9, 4))
-            ax.plot(mean_vector, 'r')
-            x_ticks = range(0,31)
-            x_labels = range(1,32)
-            plt.xticks(ticks=x_ticks, labels=x_labels)
-            plt.grid(which='both')
-            for xt in [0, 7, 14, 21, 28]:
-                    ax.axvline(x=xt, ls='-', c='grey')
-            ax.plot(std_vector, 'b') # sarebbe forse meglio fare mean + std e mean - std tratteggiate in rosso tipo
-            ax.plot(median_vector, 'g')
-            ax.plot(percentile_vector, 'c')
+
             mean_plus = [float(i) + float(j) for i, j in zip(mean_vector,
                                                              std_vector)]
             mean_minus = [float(i) - float(j) for i, j in zip(mean_vector,
                                                               std_vector)]
+
+            # vorrei il grafico carino in particolare: etichette sugli assi (x
+            # giorni da 1 a 31),
+            # linee più carine, std stampata come scritto sotto, legenda carina,
+            # grafico magari un poco più
+            # largo che si veda meglio (questo anche negli altri punti 2.2 e
+            # 2.4) in cui stampiamo su 31 giorni
+            # e vorrei che venga un grafico per città aggiungendo le altre due
+            # in alto nella CITY_LIST e che si veda nel titolo magari
+
+            fig, ax = plt.subplots(constrained_layout=False, figsize=(9, 4))
+            ax.plot(mean_vector, 'r')
+            ax.plot(std_vector, 'b') # sarebbe forse meglio fare mean + std e mean - std tratteggiate in rosso tipo
+            ax.plot(median_vector, 'g')
+            ax.plot(percentile_vector, 'c')
             ax.plot(mean_plus, 'r--')
             ax.plot(mean_minus, 'r--')
             plt.xlabel("Day")
             plt.ylabel("Minutes")
-            plt.legend(["Mean", "Std", "Median", "Percentile"], loc='best')
+            plt.legend(["Mean", "Std", "Median", "Percentile"], loc=1)
             plt.title(coll + " in " + city)
+            plt.xticks(ticks=range(0,31), labels=range(1,32))
+            plt.grid(which='both')
+            for xt in [0, 7, 14, 21, 28]:
+                    ax.axvline(x=xt, ls='-', c='grey')
             print(coll+ " - " + city + ": Done")
+
 
 def main():
     loop()
     plt.show()
+
 
 if __name__ == '__main__':
     main()
