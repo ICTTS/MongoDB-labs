@@ -4,7 +4,7 @@ import datetime
 import pandas as pd
 
 COLLECTION = 'PermanentParkings'
-CITY = "Seattle"
+CITY = "Torino"
 
 
 def get_collection():
@@ -33,7 +33,7 @@ def main():
     for i in my_collection:
         data.append([i['loc']['coordinates'][0], i['loc']['coordinates'][1], i['hour_of_day']])
 
-    df = pd.DataFrame(data, columns=['Latitude', 'Longitude', 'Hour'])
+    df = pd.DataFrame(data, columns=['longitude', 'latitude', 'Hour'])
 
     # TODO partizione mattino pomeriggio sera notte
     mattino = list(range(6, 12))
