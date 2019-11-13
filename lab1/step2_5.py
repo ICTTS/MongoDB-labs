@@ -12,7 +12,7 @@ import datetime
 import numpy as np
 
 COLLECTION = ['PermanentBookings','PermanentParkings'] # Name of the collection
-CITY_LIST = ["Torino"] #,"Wien","Seattle"
+CITY_LIST = ["Torino", "Wien", "Seattle"]
 
 low_limit = 2*60  # Two minutes
 high_limit= 3*60*60  # Three hours
@@ -175,13 +175,12 @@ def loop():
             plt.xlabel("Day")
             plt.ylabel("Minutes")
             plt.legend(["Mean", "Std", "Median", "Percentile"], loc='best')
-            plt.title(coll)
-            plt.show()
-
+            plt.title(coll + " in " + city)
+            print(coll+ " - " + city + ": Done")
 
 def main():
     loop()
-
+    plt.show()
 
 if __name__ == '__main__':
     main()
