@@ -14,7 +14,7 @@ import numpy as np
 COLLECTION = ['PermanentBookings','PermanentParkings'] # Name of the collection
 CITY_LIST = ["Torino", "Wien", "Seattle"]
 
-low_limit = 2*60  # Two minutes
+low_limit = 3*60  # Two minutes
 high_limit= 3*60*60  # Three hours
 
 
@@ -35,7 +35,7 @@ def actual_rentals(collection, city, start_time, end_time):
                 {'$match':{
                     '$and':[
                     {'city': city},
-                    {'init_time': {'$gt': start_time, '$lt': end_time}}]
+                    {'init_time': {'$gte': start_time, '$lt': end_time}}]
                     }
                 },
                 {'$project':{
@@ -60,7 +60,7 @@ def actual_rentals(collection, city, start_time, end_time):
                 {'$group':{
                 '_id':'null',
                 'mean': {'$avg': '$duration'},
-                'std': {'$stdDevSamp': '$duration'},
+                'std': {'$stdDevPop': '$duration'},
                 "durationArray": {"$push": "$duration"}}
                 }]))
 
@@ -72,7 +72,7 @@ def actual_parkings(collection, city, start_time, end_time):
             {'$match':{
                 '$and':[
                 {'city': city},
-                {'init_time': {'$gt': start_time, '$lt': end_time}}]
+                {'init_time': {'$gte': start_time, '$lt': end_time}}]
                 }
             },
             {'$project':{
@@ -91,7 +91,7 @@ def actual_parkings(collection, city, start_time, end_time):
             {'$group':{
             '_id':'null',
             'mean': {'$avg': '$duration'},
-            'std': {'$stdDevSamp': '$duration'},
+            'std': {'$stdDevPop': '$duration'},
             "durationArray": {"$push": "$duration"}}
             }]))
 
@@ -138,22 +138,13 @@ def loop():
                 median = np.percentile(new_coll['durationArray'], 50)
                 percentile = np.percentile(new_coll['durationArray'], 80)
 
-                mean_vector.append(mean)
-                std_vector.append(std)
-                median_vector.append(median)
-                percentile_vector.append(percentile)
+                mean_vector.append(mean/60)
+                std_vector.append(std/60)
+                median_vector.append(median/60)
+                percentile_vector.append(percentile/60)
 
                 time1 = time2
                 time2 = time2 + day_duration
-
-            # vorrei il grafico carino in particolare: etichette sugli assi (x
-            # giorni da 1 a 31),
-            # linee più carine, std stampata come scritto sotto, legenda carina,
-            # grafico magari un poco più
-            # largo che si veda meglio (questo anche negli altri punti 2.2 e
-            # 2.4) in cui stampiamo su 31 giorni
-            # e vorrei che venga un grafico per città aggiungendo le altre due
-            # in alto nella CITY_LIST e che si veda nel titolo magari
 
             fig, ax = plt.subplots(constrained_layout=False, figsize=(9, 4))
             ax.plot(mean_vector, 'r')
