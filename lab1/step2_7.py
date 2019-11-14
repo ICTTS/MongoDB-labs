@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Wed Nov 13 12:54:32 2019
@@ -34,14 +35,14 @@ def get_collection():
 
 
 def pt_duration():
-    
+
     start = "01/10/2017"
     end = "01/11/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
     end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
-    
+
     collection = get_collection()
-               
+
     my_collection = list(collection.aggregate([
                     {'$match':{
                         '$and':[
@@ -80,7 +81,7 @@ def pt_duration():
                             '_id' : 0,
                             'pt_array':1}
                             }]))
-    
+
     return my_collection[0]['pt_array']
 
 def histogram():
@@ -95,7 +96,7 @@ def histogram():
     plt.xticks(ticks=range(0,105,5), labels=range(0,105,5))
     #come si mettono le sbarrette verticali di separazione tra le barre?
 
-    
+
 def main():
     histogram()
 
