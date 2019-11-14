@@ -35,11 +35,12 @@ def get_collection():
 
 
 def pt_duration():
-
     start = "01/10/2017"
     end = "01/11/2017"
-    start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
-    end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
+    start_time = time.mktime(datetime.datetime.strptime(start,
+                             "%d/%m/%Y").timetuple())
+    end_time = time.mktime(datetime.datetime.strptime(end,
+                           "%d/%m/%Y").timetuple())
 
     collection = get_collection()
 
@@ -56,9 +57,9 @@ def pt_duration():
                         'duration': {'$subtract': ['$final_time','$init_time']},
                         'pt_duration': '$public_transport.duration',
                         'moved': {'$ne': [
-                                {'$arrayElemAt': ['$origin_destination.coordinates',
+                            {'$arrayElemAt': ['$origin_destination.coordinates',
                                                   0]},
-                                {'$arrayElemAt': ['$origin_destination.coordinates',
+                            {'$arrayElemAt': ['$origin_destination.coordinates',
                                                   1]}]}}
                     },
                     {'$match':
@@ -84,21 +85,23 @@ def pt_duration():
 
     return my_collection[0]['pt_array']
 
-def histogram():
+def make_hist():
     pt_duration_array = [x/60 for x in pt_duration()]
-#    print(pt_duration_array[-1]) mmmmm c'è una piccola coda di ouliers che non
-#    si vede a 228 circa neanche mettendo il bin, magari farli comunque?
+    # print(pt_duration_array[-1]) mmmmm c'è una piccola coda di ouliers che non
+    # si vede a 228 circa neanche mettendo il bin, magari farli comunque?
     bins = list(range(0,100,5))
-    plt.hist(np.array(pt_duration_array),bins)
-    plt.xlabel('PT duration (minutes)')
+    plt.hist(np.array(pt_duration_array), bins, ec='black')
+    plt.xlabel('Public transport duration (minutes)')
     plt.ylabel('No. rentals')
-    plt.title('No. rentals given the alternative public transport trip duration')
+    plt.title('No. rentals given the alternative public transport trip'
+               ' duration')
     plt.xticks(ticks=range(0,105,5), labels=range(0,105,5))
-    #come si mettono le sbarrette verticali di separazione tra le barre?
+    plt.show()
 
 
 def main():
-    histogram()
+    make_hist()
+
 
 if __name__ == '__main__':
     main()
