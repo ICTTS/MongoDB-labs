@@ -4,30 +4,31 @@
 Created on Sat Nov  9 10:53:06 2019
 Step 2.1.c
 """
-import pymongo as pm #import MongoClient only
+import pymongo as pm
 import matplotlib.pyplot as plt
 import time
 import datetime
 
-COLLECTION = 'PermanentBookings' # Name of the collection
-CITY = "Torino"
+COLLECTION = ['PermanentBookings', 'PermanentParkings'] # Name of the collection
+CITY = ["Torino", "Wien", "Seattle"]
 
 
-def get_collection():
+def get_collection(coll_name):
     """Connection to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
                             tlsAllowInvalidCertificates=True)
-    db = client['carsharing'] #Choose the DB to use
+    db = client['carsharing']  # Choose the DB to use
     db.authenticate('ictts', 'Ictts16!')#, mechanism='MONGODB-CR') #authentication
-    collection = db[COLLECTION]
+    collection = db[coll_name]
     return collection
 
 
-def days_aggregate():
+def days_aggregate(collection_name, city):
+    plt.figure()
     """Aggregation per days of the week."""
-    collection = get_collection()
+    collection = get_collection(collection_name)
     start = "01/10/2017"
     end = "01/11/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
@@ -35,7 +36,7 @@ def days_aggregate():
     start_time_seattle = start_time -10*60*60
     end_time_seattle = end_time -9*60*60
 
-    daysofweek = [1,2,3,4,5,6,7]
+    daysofweek = [1, 2, 3, 4, 5, 6, 7]
 
     for day in daysofweek:
 
@@ -43,14 +44,14 @@ def days_aggregate():
         num_of_documents = 0
         seconds = 0
 
-        if (CITY == "Seattle"):
+        if (city == "Seattle"):
             start_time = start_time_seattle
             end_time = end_time_seattle
 
         my_collection = list(collection.aggregate([
                 {"$match":{
                     "$and":[
-                    {"city": CITY},
+                    {"city": city},
                     {"init_time": {"$gte": start_time, "$lt": end_time}}]}
                 },
                 {"$project":{
@@ -102,22 +103,27 @@ def days_aggregate():
 
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
-    plt.ylim([0, 1])
+    plt.ylim([0, 1.05])
     plt.legend(['Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday','Friday','Saturday'], loc=4)
     plt.grid(which='both')
-    plt.show()
+    plt.title("%s in %s" %(collection_name, city))
 
-def weeks_aggregate():
+
+def weeks_aggregate(collection_name, city):
+    plt.figure()
     """Aggregation per weeks."""
-    collection = get_collection()
+    collection = get_collection(collection_name)
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
     start_time_seattle = start_time -10*60*60
     week_duration = 7*24*60*60  # In seconds.
     end_time = start_time + week_duration
     end_time_seattle = start_time_seattle + week_duration
-
     weeks = [1, 2, 3, 4]
+
+    if (city == "Seattle"):
+        start_time = start_time_seattle
+        end_time = end_time_seattle
 
     for week in weeks:
 
@@ -125,14 +131,10 @@ def weeks_aggregate():
         num_of_documents = 0
         seconds = 0
 
-        if (CITY == "Seattle"):
-            start_time = start_time_seattle
-            end_time = end_time_seattle
-
         my_collection = list(collection.aggregate([
                 {'$match':{
                     '$and':[
-                    {'city': CITY},
+                    {'city': city},
                     {'init_time': {'$gte': start_time, '$lt': end_time}}]}
                 },
                 {'$project':{
@@ -182,15 +184,22 @@ def weeks_aggregate():
 
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
-    plt.ylim([0, 1])
+    plt.ylim([0, 1.05])
     plt.legend(['week 1', 'week 2', 'week 3', 'week 4'], loc=4)
     plt.grid(which='both')
-    plt.show()
+    plt.title("%s in %s" %(collection_name, city))
 
 
 def main():
-    days_aggregate()
-    weeks_aggregate()
+    for city in CITY:
+        for coll in COLLECTION:
+            print("Analysing %s in %s - DAYS" %(coll, city))
+            days_aggregate(coll, city)
+            print("Analysing %s in %s - WEEKS" %(coll, city))
+            weeks_aggregate(coll, city)
+
+    plt.show()
+    print("--- END ---")
 
 
 if __name__ == '__main__':
