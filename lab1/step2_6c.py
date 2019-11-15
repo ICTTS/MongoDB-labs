@@ -100,7 +100,10 @@ def main():
                                        'destination_longitude', 'destination_latitude', 'Hour'])
 
     # TODO scegliere sulla mappa una coordinata di partenza e dividere in griglia 500 m poi fare densità
-    
+    # Torino 45.07 - 45 lat 7.35 - 7.44 long
+    # Torino 45.11666667 - 45 - 7.58333333 - 7.73333333
+    # Torino 45.12277778 - 45.00611111 - 7.58944444 - 7.73944444
+    # 22 secondi sono 500 m roughly 0.00611111 in decimal coordinate
 
 if __name__ == '__main__':
     main()
