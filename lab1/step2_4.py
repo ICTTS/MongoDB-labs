@@ -25,17 +25,19 @@ def get_collection():
     collection = db[COLLECTION]
     return collection
 
+
 def hours_aggregate():
     """Aggregation per hours of the day."""
     collection = get_collection()
     start = "01/10/2017"
-    start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
+    start_time = time.mktime(datetime.datetime.strptime(start,
+                             "%d/%m/%Y").timetuple())
     day_duration = 24*60*60
     start_time_seattle = start_time -10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
     days = list(range(31))
-    
+    fig, ax = plt.subplots(constrained_layout=False, figsize=(15, 8))
     low_limit = 2*60  # Two minutes
     high_limit= 3*60*60  # Three hours
     for city in CITY_LIST:
@@ -46,8 +48,8 @@ def hours_aggregate():
         if (city == "Seattle"):
             time1 = start_time_seattle
             time2 = end_time_seattle
-    
-        for day in days:   
+
+        for day in days:
            my_collection = list(collection.aggregate([
                    {'$match':{
                        '$and':[
@@ -71,34 +73,34 @@ def hours_aggregate():
                    },
                    {'$group':{
                        '_id': "$hour_of_day",
-                       'total': {"$sum": 1} 
+                       'total': {"$sum": 1}
                    }},
                    {'$sort':{
                            '_id': 1
                            }}
            ]))
-        
+
            time1 = time2
            time2 = time2 + day_duration
-        
+
            for el in my_collection:
              number_of_rentals.append(el['total'])
-        
+
         plt.plot(number_of_rentals)
-    
-    #da sistemare etichette carine asse x con le mezzanotti dei vari giorni
+
     plt.xlabel('Hours per day')
     plt.ylabel('No. of bookings')
-    plt.xticks(ticks=[0, 120, 240, 360], labels=['Oct 1,2017', 'Oct 6, 2017',
-           'Oct 11,2017', 'Oct 16, 2017'],
-        rotation='horizontal')
-    plt.legend(CITY_LIST, loc=1)
+    plt.xticks(ticks=[0, 168, 336, 504, 672],
+               labels=['Oct 1', 'Oct 8', 'Oct 15', 'Oct 22', 'Oct 29'],
+               rotation='horizontal')
+    plt.legend(CITY_LIST, loc=2)
     plt.grid(which='both')
-    plt.show()
+    plt.title("Rentals")
 
 
 def main():
     hours_aggregate()
+    plt.show()
 
 
 if __name__ == '__main__':
