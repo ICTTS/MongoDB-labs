@@ -13,6 +13,7 @@ import numpy as np
 
 COLLECTION = ['PermanentBookings','PermanentParkings'] # Name of the collection
 CITY_LIST = ["Torino", "Wien", "Seattle"]
+PERC = 80
 
 low_limit = 3*60  # Two minutes
 high_limit= 3*60*60  # Three hours
@@ -99,7 +100,6 @@ def actual_parkings(collection, city, start_time, end_time):
 
 
 def loop():
-
     days_list = list(range(31))
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start,
@@ -136,7 +136,7 @@ def loop():
                 mean = new_coll['mean']
                 std = new_coll['std']
                 median = np.percentile(new_coll['durationArray'], 50)
-                percentile = np.percentile(new_coll['durationArray'], 80)
+                percentile = np.percentile(new_coll['durationArray'], PERC)
 
                 mean_vector.append(mean/60)
                 std_vector.append(std/60)
@@ -151,18 +151,18 @@ def loop():
                                                              std_vector)]
             mean_minus = [float(i) - float(j) for i, j in zip(mean_vector,
                                                               std_vector)]
-    
+
 
             fig, ax = plt.subplots(constrained_layout=False, figsize=(9, 4))
-            ax.plot(mean_vector, 'r')
-#            ax.plot(std_vector, 'b') # sarebbe forse meglio fare mean + std e mean - std tratteggiate in rosso tipo
-            ax.plot(median_vector, 'g')
-            ax.plot(percentile_vector, 'c')
-            ax.plot(mean_plus, 'r--')
-            ax.plot(mean_minus, 'r--')
+            ax.plot(mean_vector, c=(0, 0.4470, 0.7410))
+            ax.plot(mean_plus, c=(0, 0.4470, 0.7410), ls='--')
+            ax.plot(median_vector, c=(0.8500, 0.3250, 0.0980))
+            ax.plot(percentile_vector, c=(0.4660, 0.6740, 0.1880))
+            ax.plot(mean_minus, c=(0, 0.4470, 0.7410), ls='--')
             plt.xlabel("Day")
             plt.ylabel("Minutes")
-            plt.legend(["Mean","Median", "Percentile"], loc=1)# "Std", in seconda posizione
+            plt.legend(["Mean", "Mean ± std", "Median", str(PERC)+
+                        "° Percentile"], loc=1)
             plt.title(coll + " in " + city)
             plt.xticks(ticks=range(0,31), labels=range(1,32))
             plt.grid(which='both')
