@@ -43,8 +43,8 @@ for coll in COLLECTION:
             end_time = end_time_seattle
 
         # Pipeline:
-        # Select only documents with city=Torino in October 2017, calculate duration,
-        # sort by duration in ascending order
+        # Select only documents with city=Torino in October 2017, calculate
+        # duration, sort by duration in ascending order
         my_collection = list(collection.aggregate([
             {'$match':{
                 '$and':[
@@ -93,13 +93,12 @@ for coll in COLLECTION:
         #%% Plots
         plt.semilogx(range(1,len(duration_list)+1),results)
 
-    #plt.plot(results)
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
-    plt.ylim([0, 1])
+    plt.ylim([0, 1.05])
     plt.legend(['Turin', 'Wien', 'Seattle'], loc=4)
     plt.grid(which='both')
     plt.title(coll)
-    plt.show()
 
+plt.show()
 print("--- END ---")
