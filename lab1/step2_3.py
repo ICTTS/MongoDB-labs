@@ -132,7 +132,7 @@ for coll in COLLECTION:
     #plt.plot(results)
     plt.xlabel('Minutes')
     plt.ylabel('CDF')
-    plt.ylim([0, 1])
+    plt.ylim([0, 1.05])
     plt.legend(['Turin', 'Wien', 'Seattle'], loc=4)
     plt.grid(which='both')
     plt.title(coll)
