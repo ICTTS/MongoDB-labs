@@ -4,8 +4,6 @@
 Step 1
 """
 import pymongo as pm
-from pprint import pprint
-import pandas as pd
 import time
 import datetime
 
@@ -48,7 +46,7 @@ print("start:", datetime.datetime.utcfromtimestamp(start).strftime('%d-%m-%Y '
                                                                    '%H:%M:%S'))
 print("end  :", datetime.datetime.utcfromtimestamp(end).strftime('%d-%m-%Y '
                                                                  '%H:%M:%S'))
-                                                                 
+
 print("\n- How many cars are available?")
 print(active_parkings.count_documents({"city": "Torino"}))
 print(active_parkings.count_documents({"city": "Wien"}))
@@ -58,11 +56,9 @@ for i in city:
     print('available cars in ', i, ' are : ', len(available))
 
 print("\n- How many cars are available? (distinct plate)")
-print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))  #
-print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))  #
-print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))  #
-
-
+print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))
+print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))
+print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))
 
 # print("edu purpose : ", time.time(), ' ', time.gmtime(start))
 # 12/13/2016 @ 5:38pm (UTC) UK time
@@ -71,26 +67,33 @@ print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))  #
 print("\n- Bookings on December 2017?")
 
 start_date = "01/12/2017"
-start_time = time.mktime(datetime.datetime.strptime(start_date, "%d/%m/%Y").timetuple())
+start_time = time.mktime(datetime.datetime.strptime(start_date,
+                                                    "%d/%m/%Y").timetuple())
 end_date = "01/1/2018"
-end_time = time.mktime(datetime.datetime.strptime(end_date, "%d/%m/%Y").timetuple())
+end_time = time.mktime(datetime.datetime.strptime(end_date,
+                                                  "%d/%m/%Y").timetuple())
 for i in city:
     dec_city = permanent_bookings.find({'city': i,
-                                        'init_time': {'$gte': start_time, '$lt': end_time}})
+                                        'init_time': {'$gte': start_time,
+                                                      '$lt': end_time}})
 
     print('booking on december 2017 in ', i, ' are: ', len(list(dec_city)))
 
 
-# TODO alternative modes only for turin and wien
+# TODO alternative modes only for Turin and Wien
 torino_alternativo = list(permanent_bookings.aggregate([
     {'$match': {'$and': [
-        {'city': 'Torino'}, {'walking.duration': {'$ne': -1}}, {'public_transport.duration': {'$ne': -1}}
+        {'city': 'Torino'},
+        {'walking.duration': {'$ne': -1}},
+        {'public_transport.duration': {'$ne': -1}}
     ]}},
     {'$project': {'_id': 0}}
 ]))
 wien_alternativo = list(permanent_bookings.aggregate([
     {'$match': {'$and': [
-        {'city': 'Wien'}, {'walking.duration': {'$ne': -1}}, {'public_transport.duration': {'$ne': -1}}
+        {'city': 'Wien'},
+        {'walking.duration': {'$ne': -1}},
+        {'public_transport.duration': {'$ne': -1}}
     ]}},
     {'$project': {'_id': 0}}
 ]))
