@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Nov  9 10:53:06 2019
+"""Created on Sat Nov  9 10:53:06 2019.
+
 Step 2.1.c
 """
 import pymongo as pm
@@ -14,7 +14,7 @@ CITY = ["Torino", "Wien", "Seattle"]
 
 
 def get_collection(coll_name):
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -26,8 +26,8 @@ def get_collection(coll_name):
 
 
 def days_aggregate(collection_name, city):
+    """Aggregate per days of the week."""
     plt.figure()
-    """Aggregation per days of the week."""
     collection = get_collection(collection_name)
     start = "01/10/2017"
     end = "01/11/2017"
@@ -116,8 +116,8 @@ def days_aggregate(collection_name, city):
 
 
 def weeks_aggregate(collection_name, city):
+    """Aggregate per weeks."""
     plt.figure()
-    """Aggregation per weeks."""
     collection = get_collection(collection_name)
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/"
@@ -201,6 +201,7 @@ def weeks_aggregate(collection_name, city):
 
 
 def main():
+    """Call aggregations per days and per weeks."""
     for city in CITY:
         for coll in COLLECTION:
             print("Analysing %s in %s - DAYS" % (coll, city))

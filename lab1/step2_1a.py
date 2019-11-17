@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Nov  9 10:53:06 2019
+"""Created on Sat Nov  9 10:53:06 2019.
+
 Step 2.1.a
 """
 import pymongo as pm
@@ -99,6 +99,6 @@ for coll in COLLECTION:
     plt.legend(['Turin', 'Wien', 'Seattle'], loc=4)
     plt.grid(which='both')
     plt.title(coll)
-
 plt.show()
+
 print("--- END ---")

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Step 1
-"""
+"""Step 1."""
 import pymongo as pm
 import time
 import datetime
@@ -81,7 +79,7 @@ for i in city:
 
 
 # TODO alternative modes only for Turin and Wien
-torino_alternativo = list(permanent_bookings.aggregate([
+torino_altern = list(permanent_bookings.aggregate([
     {'$match': {'$and': [
         {'city': 'Torino'},
         {'walking.duration': {'$ne': -1}},
@@ -89,7 +87,7 @@ torino_alternativo = list(permanent_bookings.aggregate([
     ]}},
     {'$project': {'_id': 0}}
 ]))
-wien_alternativo = list(permanent_bookings.aggregate([
+wien_altern = list(permanent_bookings.aggregate([
     {'$match': {'$and': [
         {'city': 'Wien'},
         {'walking.duration': {'$ne': -1}},
@@ -98,5 +96,5 @@ wien_alternativo = list(permanent_bookings.aggregate([
     {'$project': {'_id': 0}}
 ]))
 
-print('alternative booking in turin was : ', len(torino_alternativo))
-print('alternative booking in wien was : ', len(wien_alternativo))
+print('alternative booking in turin was: ', len(torino_altern))
+print('alternative booking in wien was: ', len(wien_altern))

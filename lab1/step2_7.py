@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Nov 13 12:54:32 2019
+"""Created on Wed Nov 13 12:54:32 2019.
+
 Step 2.7
 """
 
@@ -24,7 +24,7 @@ high_limit_pt = 5*60*60
 
 
 def get_collection():
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -36,6 +36,7 @@ def get_collection():
 
 
 def pt_duration():
+    """Query the database."""
     start = "01/10/2017"
     end = "01/11/2017"
     start_time = time.mktime(datetime.datetime.strptime(start,
@@ -102,6 +103,7 @@ def pt_duration():
 
 
 def make_hist(array, bins, color, titled):
+    """Plot a histogram."""
     # print(pt_duration_array[-1]) mmmmm c'è una piccola coda di ouliers che
     # non si vede a 228 circa neanche mettendo il bin, magari farli comunque?
     fig, ax = plt.subplots(constrained_layout=False, figsize=(15, 8))
@@ -114,6 +116,7 @@ def make_hist(array, bins, color, titled):
 
 
 def main():
+    """Call public transport function and make histograms."""
     pt, w = pt_duration()
     pt_duration_array = [x/60 for x in pt]
     w_duration_array = [x/60 for x in w]

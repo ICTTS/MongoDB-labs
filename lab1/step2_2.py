@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Nov  9 10:53:06 2019
+"""Created on Sat Nov  9 10:53:06 2019.
 
 Step 2.2
 
@@ -32,6 +31,7 @@ def get_collection():
 
 def hours_aggregate():
     """Aggregate per hours of the day.
+
     start_time and end_time define the interval day period in which data has
     to be selected (match). Data are grouped by hour_of_day and then sorted.
     """
@@ -97,6 +97,7 @@ def hours_aggregate():
 
 
 def main():
+    """Call aggregation per hour."""
     hours_aggregate()
     plt.show()
 

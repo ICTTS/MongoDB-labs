@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 11 21:47:58 2019
+"""Created on Mon Nov 11 21:47:58 2019.
+
 Step 2.5
 """
 
-import pymongo as pm #import MongoClient only
+import pymongo as pm
 import matplotlib.pyplot as plt
 import time
 import datetime
 import numpy as np
 
-COLLECTION = ['PermanentBookings','PermanentParkings'] # Name of the collection
+COLLECTION = ['PermanentBookings', 'PermanentParkings']
 CITY_LIST = ["Torino", "Wien", "Seattle"]
 PERC = 80
 
 low_limit = 3*60  # Two minutes
-high_limit= 3*60*60  # Three hours
+high_limit = 3*60*60  # Three hours
 
 
 def get_collection(coll):
