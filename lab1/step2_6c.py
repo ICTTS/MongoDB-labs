@@ -118,6 +118,7 @@ def main():
     # Torino 45.12277778 - 45.00611111 - 7.58944444 - 7.73944444
     # 22 secondi sono 500 m roughly 0.00611111 in decimal coordinate
     # forse dovremmo usare un map reduce approach
+    # quadrato esterno poi griglia poi map reduce
 
 if __name__ == '__main__':
     main()
