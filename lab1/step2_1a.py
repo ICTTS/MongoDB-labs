@@ -99,6 +99,8 @@ for coll in COLLECTION:
     plt.legend(['Turin', 'Wien', 'Seattle'], loc=4)
     plt.grid(which='both')
     plt.title(coll)
+#    plt.savefig('step2.1a' + coll + '.eps', format='eps')
+
 plt.show()
 
 print("--- END ---")

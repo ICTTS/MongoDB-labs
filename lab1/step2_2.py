@@ -94,7 +94,7 @@ def hours_aggregate():
     plt.legend(CITY_LIST, loc=2)
     plt.grid(which='both')
     plt.title("Bookings")
-
+#    plt.savefig('step2.2.eps', format='eps')
 
 def main():
     """Call aggregation per hour."""

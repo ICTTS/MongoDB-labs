@@ -113,7 +113,7 @@ def make_hist(array, bins, color, titled):
     plt.title('No. rentals given the alternative ' + titled + ' trip'
               ' duration')
     plt.xticks(ticks=bins, labels=bins)
-
+#    plt.savefig('step2.7' + titled + '.eps', format='eps')
 
 def main():
     """Call public transport function and make histograms."""
