@@ -7,6 +7,7 @@ import pymongo as pm
 import time
 import datetime
 import pandas as pd
+import numpy as np
 
 COLLECTION = 'PermanentBookings'
 CITY = "Torino"
@@ -32,9 +33,12 @@ def main():
             {'$project': {'_id': 0,
                           'origin': {'$arrayElemenAt': ["$origin_destination.coordinates", 0]},
                           'destination': {'$arrayElemenAt': ["$origin_destination.coordinates", 1]},
-                          'hour_of_day': {'$hour': '$init_date'}
+                          'hour_of_day': {'$hour': '$init_date'},
+                          'moved': {'$ne': [
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 0]},
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 1]}]}
                           }},
-            {'$match': {'hour_of_day': {'$lt': 6}}}
+            {'$match': {'moved': True, 'hour_of_day': {'$lt': 6}}}
         ]))
     my_collection_mattino = list(collection.aggregate(
         [
@@ -42,9 +46,12 @@ def main():
             {'$project': {'_id': 0,
                           'origin': {'$arrayElemenAt': ["$origin_destination.coordinates", 0]},
                           'destination': {'$arrayElemenAt': ["$origin_destination.coordinates", 1]},
-                          'hour_of_day': {'$hour': '$init_date'}
+                          'hour_of_day': {'$hour': '$init_date'},
+                          'moved': {'$ne': [
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 0]},
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 1]}]}
                           }},
-            {'$match': {'hour_of_day': {'$and': [{'$gte': 6}, {'$lt': 12}]}}}
+            {'$match': {'moved': True, 'hour_of_day': {'$and': [{'$gte': 6}, {'$lt': 12}]}}}
         ]))
     my_collection_pomeriggio = list(collection.aggregate(
         [
@@ -52,9 +59,12 @@ def main():
             {'$project': {'_id': 0,
                           'origin': {'$arrayElemenAt': ["$origin_destination.coordinates", 0]},
                           'destination': {'$arrayElemenAt': ["$origin_destination.coordinates", 1]},
-                          'hour_of_day': {'$hour': '$init_date'}
+                          'hour_of_day': {'$hour': '$init_date'},
+                          'moved': {'$ne': [
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 0]},
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 1]}]}
                           }},
-            {'$match': {'hour_of_day': {'$and': [{'$gte': 12}, {'$lt': 18}]}}}
+            {'$match': {'moved': True, 'hour_of_day': {'$and': [{'$gte': 12}, {'$lt': 18}]}}}
         ]))
     my_collection_sera = list(collection.aggregate(
         [
@@ -62,18 +72,21 @@ def main():
             {'$project': {'_id': 0,
                           'origin': {'$arrayElemenAt': ["$origin_destination.coordinates", 0]},
                           'destination': {'$arrayElemenAt': ["$origin_destination.coordinates", 1]},
-                          'hour_of_day': {'$hour': '$init_date'}
+                          'hour_of_day': {'$hour': '$init_date'},
+                          'moved': {'$ne': [
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 0]},
+                              {'$arrayElemAt': ['$origin_destination.coordinates', 1]}]}
                           }},
-            {'$match': {'hour_of_day': {'$and': [{'$gte': 18}, {'$lt': 24}]}}}
+            {'$match': {'moved': True, 'hour_of_day': {'$gte': 18}}}
         ]))
 
     data = []
     for i in my_collection_mattino:
         data.append([i['origin'][0], i['origin'][1],
-                       i['destination'][0], i['destination'][1], i['hour_of_day']])
+                     i['destination'][0], i['destination'][1], i['hour_of_day']])
 
     df_m = pd.DataFrame(data, columns=['origin_longitude', 'origin_latitude',
-                                         'destination_longitude', 'destination_latitude', 'Hour'])
+                                       'destination_longitude', 'destination_latitude', 'Hour'])
 
     data = []
     for i in my_collection_pomeriggio:
@@ -104,6 +117,8 @@ def main():
     # Torino 45.11666667 - 45 - 7.58333333 - 7.73333333
     # Torino 45.12277778 - 45.00611111 - 7.58944444 - 7.73944444
     # 22 secondi sono 500 m roughly 0.00611111 in decimal coordinate
+    # forse dovremmo usare un map reduce approach
+    # quadrato esterno poi griglia poi map reduce
 
 if __name__ == '__main__':
     main()
