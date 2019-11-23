@@ -113,7 +113,7 @@ def days_aggregate(collection_name, city):
                 'Friday', 'Saturday'], loc=4)
     plt.grid(which='both')
     plt.title("%s in %s" % (collection_name, city))
-#    plt.savefig('step2.1c' + '_day_' + collection_name + city + '.eps', format='eps')
+    plt.savefig('step2_1c' + '_day_' + collection_name + city + '.eps', format='eps')
 
 def weeks_aggregate(collection_name, city):
     """Aggregate per weeks."""
@@ -198,7 +198,7 @@ def weeks_aggregate(collection_name, city):
     plt.legend(['week 1', 'week 2', 'week 3', 'week 4'], loc=4)
     plt.grid(which='both')
     plt.title("%s in %s" % (collection_name, city))
-#    plt.savefig('step2.1c' + '_week_' + collection_name + city + '.eps', format='eps')
+    plt.savefig('step2_1c' + '_week_' + collection_name + city + '.eps', format='eps')
 
 
 def main():

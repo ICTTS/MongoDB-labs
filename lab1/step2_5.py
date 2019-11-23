@@ -169,7 +169,7 @@ def loop():
             for xt in [0, 7, 14, 21, 28]:
                     ax.axvline(x=xt, ls='-', c='grey')
             print(coll+ " - " + city + ": Done")
-#            plt.savefig('step2.5' + coll + city + '.eps', format='eps')
+            plt.savefig('step2_5' + coll + city + '.eps', format='eps')
 
 def main():
     loop()
