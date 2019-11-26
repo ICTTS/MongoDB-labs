@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>poligono</name>
+	<Placemark>
+		<name>polygon</name>
+		<LookAt>
+			<longitude>7.734509631206404</longitude>
+			<latitude>45.07098675403797</latitude>
+			<altitude>353.6763390152641</altitude>
+			<heading>1.258446539996982</heading>
+			<tilt>0</tilt>
+			<range>33715.3064047778</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						7.567124485883574,45.03286898972983,295.4463257563422 7.566433957882134,45.01682662399377,248.6137390229467 7.583877015421563,45.01658374429358,248.1530309769884 7.567124485883574,45.03286898972983,295.4463257563422 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+</Document>
+</kml>
