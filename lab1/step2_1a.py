@@ -32,7 +32,7 @@ city_list = ["Wien", "Torino", "Seattle"]
 
 for coll in COLLECTION:
     collection = db[coll]  # Collection for Car2go to use
-    plt.figure()
+    plt.figure(constrained_layout=True)
     print("Analysing collection %s..." % coll)
     for city in city_list:
         duration_list = []
