@@ -116,7 +116,8 @@ def main():
     # Torino 45.07 - 45 lat 7.35 - 7.44 long
     # Torino 45.11666667 - 45 - 7.58333333 - 7.73333333
     # Torino 45.12277778 - 45.00611111 - 7.58944444 - 7.73944444
-    # 22 secondi sono 500 m roughly 0.00611111 in decimal coordinate
+
+    # 0.004495 verso nord e 0.006358 verso est
     # forse dovremmo usare un map reduce approach
     # quadrato esterno poi griglia poi map reduce
 
