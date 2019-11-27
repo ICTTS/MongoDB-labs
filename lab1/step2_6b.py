@@ -30,7 +30,31 @@ def main():
     dy = 0.004495
     x = 7.576
     y = 45
-    density = []
+    density = [[0] * 32 for i in range(32)]
+    collection = get_collection()
+    '''my_collection_notte = collection.aggregate([
+        {'$match': {'city': CITY}},
+        {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
+        {'$match': {'hour_of_day': {'$lt': 6}}}
+    ])'''
+
+    for i in range(32):
+        for j in range(32):
+            density[i][j] = collection.aggregate([
+                {'$match': {'city': CITY}},
+                {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
+                {'$match': {
+                    'hour_of_day': {'$lt': 6}, "loc": {"$geoWithin": {
+                        "$geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[x + j * dx, y + i * dy],
+                                            [x + (j + 1) * dx, y + i * dy],
+                                            [x + (j + 1) * dx, y + (i + 1) * dy],
+                                            [x + j * dx, y + (i + 1) * dy],
+                                            [x + j * dx, y + i * dy]]
+                        }}}}}
+            ]).count()
+
     with open('grid.csv', 'w') as file:
         file.write('geometry,density\n')
         for i in range(32):
@@ -41,8 +65,9 @@ def main():
                                                                          x + (j + 1) * dx, y + i * dy,
                                                                          x + (j + 1) * dx, y + (i + 1) * dy,
                                                                          x + j * dx, y + (i + 1) * dy,
-                                                                         x + j * dx, y + i * dy, 1))
+                                                                         x + j * dx, y + i * dy, density[i][j]))
 
 
+#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,0 7.576,45.004495,0 7.576,45.0,0
 if __name__ == '__main__':
     main()
