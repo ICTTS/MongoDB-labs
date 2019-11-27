@@ -113,11 +113,10 @@ def main():
                                        'destination_longitude', 'destination_latitude', 'Hour'])
 
     # TODO scegliere sulla mappa una coordinata di partenza e dividere in griglia 500 m poi fare densità
-    # Torino 45.07 - 45 lat 7.35 - 7.44 long
-    # Torino 45.11666667 - 45 - 7.58333333 - 7.73333333
-    # Torino 45.12277778 - 45.00611111 - 7.58944444 - 7.73944444
+    # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
 
     # 0.004495 verso nord e 0.006358 verso est
+
     # forse dovremmo usare un map reduce approach
     # quadrato esterno poi griglia poi map reduce
 
