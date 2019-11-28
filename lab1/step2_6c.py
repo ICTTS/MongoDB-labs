@@ -112,13 +112,7 @@ def main():
     df_n = pd.DataFrame(data, columns=['origin_longitude', 'origin_latitude',
                                        'destination_longitude', 'destination_latitude', 'Hour'])
 
-    # TODO scegliere sulla mappa una coordinata di partenza e dividere in griglia 500 m poi fare densità
-    # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
-
-    # 0.004495 verso nord e 0.006358 verso est
-
-    # forse dovremmo usare un map reduce approach
-    # quadrato esterno poi griglia poi map reduce
+    # TODO scegliere design dell'OD matrix
 
 if __name__ == '__main__':
     main()

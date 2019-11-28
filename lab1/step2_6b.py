@@ -40,20 +40,21 @@ def main():
 
     for i in range(32):
         for j in range(32):
-            density[i][j] = collection.aggregate([
+            density[i][j] = len(list(collection.aggregate([
                 {'$match': {'city': CITY}},
                 {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
                 {'$match': {
-                    'hour_of_day': {'$lt': 6}, "loc": {"$geoWithin": {
+                    'hour_of_day': {'$gte': 18, '$lt': 24}, "loc": {"$geoWithin": {
                         "$geometry": {
                             "type": "Polygon",
-                            "coordinates": [[x + j * dx, y + i * dy],
+                            "coordinates": [[[x + j * dx, y + i * dy],
                                             [x + (j + 1) * dx, y + i * dy],
                                             [x + (j + 1) * dx, y + (i + 1) * dy],
                                             [x + j * dx, y + (i + 1) * dy],
-                                            [x + j * dx, y + i * dy]]
-                        }}}}}
-            ]).count()
+                                            [x + j * dx, y + i * dy]]]
+                        }}}}},
+                {"$group": {'_id': "$loc", 'count': {'$sum': 1}}}
+            ])))
 
     with open('grid.csv', 'w') as file:
         file.write('geometry,density\n')
