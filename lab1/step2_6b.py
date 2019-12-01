@@ -32,11 +32,8 @@ def main():
     y = 45
     density = [[0] * 32 for i in range(32)]
     collection = get_collection()
-    '''my_collection_notte = collection.aggregate([
-        {'$match': {'city': CITY}},
-        {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
-        {'$match': {'hour_of_day': {'$lt': 6}}}
-    ])'''
+    START_HOUR = 18
+    END_HOUR = 24
 
     for i in range(32):
         for j in range(32):
@@ -44,7 +41,7 @@ def main():
                 {'$match': {'city': CITY}},
                 {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
                 {'$match': {
-                    'hour_of_day': {'$gte': 18, '$lt': 24}, "loc": {"$geoWithin": {
+                    'hour_of_day': {'$gte': START_HOUR, '$lt': END_HOUR   }, "loc": {"$geoWithin": {
                         "$geometry": {
                             "type": "Polygon",
                             "coordinates": [[[x + j * dx, y + i * dy],
