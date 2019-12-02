@@ -41,7 +41,8 @@ def main():
                 {'$match': {'city': CITY}},
                 {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
                 {'$match': {
-                    'hour_of_day': {'$gte': START_HOUR, '$lt': END_HOUR   }, "loc": {"$geoWithin": {
+                    'hour_of_day': {'$gte': START_HOUR, '$lt': END_HOUR},
+                    "loc": {"$geoWithin": {
                         "$geometry": {
                             "type": "Polygon",
                             "coordinates": [[[x + j * dx, y + i * dy],
