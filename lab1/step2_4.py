@@ -8,6 +8,7 @@ import pymongo as pm
 import matplotlib.pyplot as plt
 import time
 import datetime
+import pandas as pd
 
 COLLECTION = ['PermanentBookings', 'PermanentParkings']
 CITY_LIST = ["Torino", "Wien", "Seattle"]
@@ -23,6 +24,70 @@ def get_collection(coll_name):
     db.authenticate('ictts', 'Ictts16!')
     collection = db[coll_name]
     return collection
+
+
+def days_aggregate(collection_name, city):
+    """Aggregate per days of the week."""
+    collection = get_collection(collection_name)
+    start = "01/10/2017"
+    end = "01/11/2017"
+    start_time = time.mktime(datetime.datetime.strptime(start, "%d/"
+                                                        "%m/%Y").timetuple())
+    end_time = time.mktime(datetime.datetime.strptime(end,
+                                                      "%d/%m/%Y").timetuple())
+    start_time_seattle = start_time - 10*60*60
+    end_time_seattle = end_time - 9*60*60
+
+    if (city == "Seattle"):
+        start_time = start_time_seattle
+        end_time = end_time_seattle
+
+    my_collection = list(collection.aggregate([
+            {"$match": {
+                "$and": [
+                    {"city": city},
+                    {"init_time": {"$gte": start_time,
+                                   "$lt": end_time}}]
+            }
+            },
+            {"$project": {
+                "_id": 0,
+                "duration": {"$subtract": ["$final_time",
+                                           "$init_time"]},
+                "dayOfYear": {"$dayOfYear": "$init_date"},
+                "hour": {"$floor": {"$divide": ["$init_time", 3600]}},
+                "dayOfWeek": {"$dayOfWeek": "$init_date"}
+            }
+            },
+            {"$group": {
+                "_id": {"hour": "$hour"},
+                "count": {"$sum": 1}
+            }
+            },
+            {"$sort": {
+                "_id": 1
+            }
+            },
+            {"$project": {
+                "_id": 0,
+                "hour": "$_id.hour",
+                "count": "$count",
+            }
+            },
+            ]))
+
+    df = pd.DataFrame(my_collection)
+    # print(df)
+    # plt.plot(df['hour'], df['count'])
+    plt.plot(df['count'])
+    plt.xlabel('Hours per day')
+    plt.ylabel('No. of bookings')
+    plt.xticks(ticks=[0, 168, 336, 504, 672],
+               labels=['Oct 1', 'Oct 8', 'Oct 15', 'Oct 22', 'Oct 29'],
+               rotation='horizontal')
+    plt.grid(which='both')
+    plt.title(collection_name)
+    save_file(df, city + ".csv")
 
 
 def hours_aggregate():
@@ -138,9 +203,21 @@ def hours_aggregate():
         plt.savefig('step2_4' + coll + '.eps', format='eps')
 
 
+def save_file(coll, filename):
+    """Save collection to csv."""
+    print("Saving to %s" % filename)
+    coll.to_csv(filename)
+
+
 def main():
-    """Call aggregation per hour."""
-    hours_aggregate()
+    """Call aggregation."""
+    fig, ax = plt.subplots(constrained_layout=False, figsize=(15, 8))
+    for city in CITY_LIST:
+        days_aggregate("PermanentBookings", city)
+    plt.legend(CITY_LIST, loc=2)
+    plt.xlim([0, 24*31])
+
+    # hours_aggregate()
     plt.show()
     print("---END---")
 
