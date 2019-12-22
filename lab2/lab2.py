@@ -11,11 +11,16 @@ from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.arima_model import ARIMA
 
 
+def read_file(filename):
+    """Read file and return dataframe."""
+    folder = os.path.dirname(os.path.abspath(__file__))
+    df = read_csv(folder + "\\" + filename)
+    return df
+
+
 def main():
     """Do."""
-    folder = os.path.dirname(os.path.abspath(__file__))
-    df = read_csv(folder + "\\Torino.csv")
-    print(df.head())
+    df = read_file("Torino.csv")
     df = df.rename(columns={'count': 'rental'})
 
     plt.figure()
@@ -24,17 +29,18 @@ def main():
     plt.grid(which='both')
 
     # ACF
-    acf_ = acf(df["rental"], nlags=48)
+    n_lags = 48
+    acf_ = acf(df["rental"], nlags=n_lags)
     plt.figure()
     plt.plot(acf_, 'o-')
-    plt.title('Autocorrelation Function')
+    plt.title('Autocorrelation Function - no. lags: %d' % n_lags)
     plt.grid(which='both')
 
     # PACF
-    pacf_ = pacf(df["rental"], nlags=48, method='ols')
+    pacf_ = pacf(df["rental"], nlags=n_lags, method='ols')
     plt.figure()
     plt.plot(pacf_, 'o-')
-    plt.title('Partial Autocorrelation Function')
+    plt.title('Partial Autocorrelation Function - no. lags: %d' % n_lags)
     plt.grid(which='both')
 
     # ARIMA model
@@ -52,14 +58,17 @@ def main():
 
     # Redisuals
     residuals = pd.DataFrame(model_fit.resid)
-
-    residuals.plot(c='r')
-    plt.title("Residuals")
+    residuals.plot(c='r', title="Residuals", legend=False)
     plt.grid(which='both')
 
-    residuals.plot(c='r', kind='kde')
-    plt.title("KDE of residuals")
+    fig, ax = plt.subplots()
+    residuals.plot(ax=ax, title="KDE of residuals", kind='kde',
+                   legend=False)
+    n_bins = 20
+    residuals.plot(ax=ax, color='#aabad7', edgecolor='white', kind='hist',
+                   density=True, bins=n_bins)
     plt.grid(which='both')
+    ax.legend(["KDE", "Density %s bins" % n_bins])
 
 
 def read_csv(filename):
