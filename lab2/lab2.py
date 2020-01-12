@@ -45,8 +45,8 @@ def main():
 
     # ARIMA model
     p = 2
-    q = 2
     d = 0
+    q = 2
 
     model = ARIMA(df["rental"], order=(p, d, q))
     model_fit = model.fit(disp=True)
@@ -69,6 +69,69 @@ def main():
                    density=True, bins=n_bins)
     plt.grid(which='both')
     ax.legend(["KDE", "Density %s bins" % n_bins])
+
+    X = df.rental.values.astype(float)
+    print("Starting ARIMA model.""")
+    train_size = 24*7*2
+    test_size = 96
+    p_list = [0, 1, 2, 3, 4]
+    d = 0
+    q = 1
+    my_arima = run_arima(X, train_size, test_size, p_list, d, q)
+    my_arima.run()
+    my_arima.plot_arima()
+
+
+class run_arima(object):
+    """Run ARIMA model."""
+
+    def __init__(self, X, train_size, test_size, p_list, d, q):
+        """Initialise parameters."""
+        self.X = X
+        self.train_size = train_size
+        self.test_size = test_size
+        self.p_list = p_list
+        self.predictions = np.zeros((len(p_list), test_size))
+        self.d = d
+        self.q = q
+        self.train = X[0:self.train_size]
+        self.test = X[self.train_size:self.train_size + self.test_size]
+
+    def run(self):
+        """Run the model."""
+        for p in self.p_list:
+            history = [t for t in self.train]
+            for t in range(self.test_size):
+                model = ARIMA(history, order=(p,
+                                              self.d,
+                                              self.q))
+                model_fit = model.fit(disp=0, maxiter=500, method='css')
+                output = model_fit.forecast()
+                y_hat = output[0]
+                self.predictions[self.p_list.index(p)][t] = y_hat
+
+                obs = self.test[t]
+                history.append(obs)
+                history = history[1:]
+
+    def plot_arima(self):
+        """Plot results."""
+        plt.figure()
+        for p in self.p_list:
+            print('MAE with p =', p, 'is:',
+                  mean_absolute_error(self.test,
+                                      self.predictions[self.p_list.index(p)]))
+            print('MSE with p =', p, 'is:',
+                  mean_squared_error(self.test,
+                                     self.predictions[self.p_list.index(p)]))
+            print('MSE with p =', p, 'is:',
+                  r2_score(self.test,
+                           self.predictions[self.p_list.index(p)]))
+
+            plt.plot(self.predictions[self.p_list.index(p)],
+                     label='p = ' + str(p))
+        plt.grid(which='both')
+        plt.legend()
 
 
 def read_csv(filename):
