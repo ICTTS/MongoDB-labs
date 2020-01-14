@@ -3,12 +3,10 @@
 """ICT in Transport Systems - Lab 2."""
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+# import numpy as np
 import os
-import time
 from sklearn.metrics import (mean_squared_error, mean_absolute_error,
                              r2_score)
-# from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 
@@ -18,6 +16,47 @@ def read_file(filename):
     folder = os.path.dirname(os.path.abspath(__file__))
     df = read_csv(folder + "\\" + filename)
     return df
+
+
+class RunArima(object):
+    """Fit an ARIMA model and run it."""
+
+    def __init__(self, X, train_size, test_size, p, d, q):
+        """Initialise parameters."""
+        self.X = X
+        self.train_size = train_size
+        self.test_size = test_size
+        self.predictions = []
+        self.order = (p, d, q)
+        self.train = X[0:self.train_size]
+        self.test = X[self.train_size:self.train_size + self.test_size]
+
+    def run(self, shift):
+        """Run the model.
+        shift = 1: shifting training window
+        shift = 0: expanding training window
+        """
+        history = [t for t in self.train]
+
+        # Make predictions
+        for t in range(self.test_size):
+            model = ARIMA(history, order=(self.order))
+            model_fit = model.fit(disp=0, maxiter=500, method='css')
+            y_hat = model_fit.forecast()[0]
+            self.predictions.append(y_hat)
+            history.append(self.test[t])
+            if shift:
+                history = history[1:]
+
+        self.mae = mean_absolute_error(self.test, self.predictions)
+        self.mse = mean_squared_error(self.test, self.predictions)
+        self.r2_score = r2_score(self.test, self.predictions)
+
+    def plot_arima(self, fig_number):
+        """Plot results."""
+        plt.figure(fig_number)
+        plt.plot(self.predictions, label="order = %s" % (str(self.order)))
+        plt.grid(which='both')
 
 
 def main():
@@ -74,74 +113,55 @@ def main():
 
     X = df.rental.values.astype(float)
     print("Starting ARIMA model.""")
-    train_size = 24*7*2
+    train_size = 24*14
     test_size = 96
-    p_list = [0, 1, 2]
+    p_list = [0, 1, 2, 3, 4, 5]
     q_list = [0, 1, 2]
-    d_list = [0, 1, 2]
+    d_list = [0]
     # grid_search = np.zeros((len(p_list), len(q_list)))
+    results = {"p": [], "d": [], "q": [], "mse": []}
+    fig_number = 20  # To plot all data from ARIMA models.
     for p in p_list:
         for q in q_list:
             for d in d_list:
                 try:
-                    my_arima = run_arima(X, train_size, test_size, p, d, q)
-                    my_arima.run()
-                    my_arima.plot_arima()
-                    print(p, d, q, my_arima.mse)
+                    my_arima = RunArima(X, train_size, test_size, p, d, q)
+                    my_arima.run(shift=1)
+                    my_arima.plot_arima(fig_number)
+                    results["p"].append(p)
+                    results["d"].append(d)
+                    results["q"].append(q)
+                    results["mse"].append(my_arima.mse)
                 except Exception as e:
                     print(p, d, q, "\n", e)
 
-    plt.figure(10)
+    # Plot original test data.
+    plt.figure(fig_number)
     plt.plot(X[train_size:train_size + test_size], label="Data")
     plt.legend()
-    # print(grid_search)
 
+    # Convert results into a dataframe.
+    results = pd.DataFrame(results)
+    print(results, "\n\n\n")
+    best = results["mse"].idxmin()
+    print("BEST:", results.loc[best])
 
-class run_arima(object):
-    """Run ARIMA model."""
+    # Select best model and plot new forecasts.
+    p = 1
+    d = 0
+    q = 1
+    model = ARIMA(df["rental"], order=(p, d, q))
+    model_fit = model.fit(disp=True)
+    plt.figure()
+    plt.plot(df["rental"])
+    plt.plot(model_fit.fittedvalues)
+    plt.grid(which='both')
+    plt.legend(["Data", "Fitted"])
+    fig, ax = plt.subplots()
+    df.rental.iloc[650:].plot(ax=ax)
 
-    def __init__(self, X, train_size, test_size, p, d, q):
-        """Initialise parameters."""
-        self.X = X
-        self.train_size = train_size
-        self.test_size = test_size
-        # self.p_list = p_list
-        self.predictions = []  # np.zeros(test_size)
-        self.p = p
-        self.d = d
-        self.q = q
-        self.train = X[0:self.train_size]
-        self.test = X[self.train_size:self.train_size + self.test_size]
-
-    def run(self):
-        """Run the model."""
-        history = [t for t in self.train]
-
-        # Make predictions
-        for t in range(self.test_size):
-            model = ARIMA(history, order=(self.p,
-                                          self.d,
-                                          self.q))
-            model_fit = model.fit(disp=0, maxiter=500, method='css')
-            y_hat = model_fit.forecast()[0]
-            self.predictions.append(y_hat)
-            history.append(self.test[t])
-            # history = history[1:]
-
-        self.mae = mean_absolute_error(self.test, self.predictions)
-        self.mse = mean_squared_error(self.test, self.predictions)
-        self.r2_score = r2_score(self.test, self.predictions)
-
-    def plot_arima(self):
-        """Plot results."""
-        plt.figure(10)
-        # print('MAE with p =', self.p, 'is:', self.mae)
-        # print('MSE with p =', self.p, 'is:', self.mse)
-        # print('R2 with p =', self.p, 'is:', self.r2_score)
-
-        plt.plot(self.predictions, label="p = %s; q = %s; d = %s"
-                 % (str(self.p), str(self.q), str(self.d)))
-        plt.grid(which='both')
+    model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
+                           plot_insample=False)
 
 
 def read_csv(filename):
