@@ -9,6 +9,8 @@ from sklearn.metrics import (mean_squared_error, mean_absolute_error,
                              r2_score)
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
+# import time
+import numpy as np
 
 
 def read_file(filename):
@@ -33,6 +35,7 @@ class RunArima(object):
 
     def run(self, shift):
         """Run the model.
+
         shift = 1: shifting training window
         shift = 0: expanding training window
         """
@@ -59,10 +62,32 @@ class RunArima(object):
         plt.grid(which='both')
 
 
+def find_missing(lst):
+    """Find missing data in a sequence."""
+    return [i for x, y in zip(lst, lst[1:])
+            for i in range(x + 1, y) if y - x > 1]
+
+
 def main():
     """Do."""
+    print("Start")
     df = read_file("Torino.csv")
     df = df.rename(columns={'count': 'rental'})
+    df["hour"] = df["hour"].values.astype(int)  # Convert hour to int
+
+    # Find missing values.
+    missing_values = find_missing(df["hour"])
+    print("Missing values:", missing_values)
+    print("Filling with average value")
+
+    mean_h = round(np.mean(df["rental"]))
+    miss_value = pd.DataFrame({"hour": missing_values,
+                               "rental": mean_h.astype(int)})
+
+    # Fill missing values with average rental number, sort and reindex.
+    df = df.append(miss_value, ignore_index=True)
+    df = df.sort_values("hour")
+    df = df.reset_index(drop=True)
 
     # ACF
     plt.figure()
