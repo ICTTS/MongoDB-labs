@@ -9,7 +9,7 @@ from sklearn.metrics import (mean_squared_error, mean_absolute_error,
                              r2_score)
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
-# import time
+import time
 import numpy as np
 import seaborn
 
@@ -34,7 +34,7 @@ class RunArima(object):
         self.train = X[0:self.train_size]
         self.test = X[self.train_size:self.train_size + self.test_size]
 
-    def run(self, shift):
+    def run(self, shift=0):
         """Run the model.
 
         shift = 1: shifting training window
@@ -49,11 +49,17 @@ class RunArima(object):
             y_hat = model_fit.forecast()[0]
             self.predictions.append(y_hat)
             history.append(self.test[t])
+            # print('predicted=%f, expected=%f' % (y_hat, history[-1]))
             if shift:
                 history = history[1:]
 
         self.mae = mean_absolute_error(self.test, self.predictions)
         self.mse = mean_squared_error(self.test, self.predictions)
+        N = len(self.test)
+        summer = [abs((a - b)/a) for a, b in zip(self.test, self.predictions)]
+        self.mpe = 100/N * np.sum(summer)
+        # print(np.sum(summer))
+        # time.sleep(20)
         self.r2_score = r2_score(self.test, self.predictions)
 
     def plot_arima(self, fig_number):
@@ -89,6 +95,18 @@ def main():
     df = df.sort_values("hour")
     df = df.reset_index(drop=True)
 
+    # Rolling statistics
+    roll_days = 7
+    df['MA'] = df['rental'].rolling(24*roll_days).mean()
+    df['MS'] = df['rental'].rolling(24*roll_days).std()
+    plt.figure()
+    plt.plot(df['rental'], label='Number of rentals')
+    plt.plot(df['MA'], label='Moving average')
+    plt.plot(df['MS'], label='Moving SD')
+    plt.title('Rolling statistics, window = %d days' % roll_days)
+    plt.grid(which='both')
+    plt.legend()
+
     # ACF
     plt.figure()
     pd.plotting.autocorrelation_plot(df["rental"])
@@ -111,7 +129,7 @@ def main():
 
     # ARIMA model test
     p = 2
-    d = 0  # Because...
+    d = 0  # Because it is stationary
     q = 2
 
     model = ARIMA(df["rental"], order=(p, d, q))
@@ -138,13 +156,13 @@ def main():
 
     X = df.rental.values.astype(float)
     print("Starting ARIMA model.""")
-    train_size = 24*14
+    train_size = 24*7
     test_size = 24*7
-    p_list = [0, 1, 2]
-    q_list = [0, 1, 2]
+    p_list = [0, 1]
+    q_list = [0, 1]
     d_list = [0]
 
-    results = {"p": [], "d": [], "q": [], "mse": []}
+    results = {"p": [], "d": [], "q": [], "mse": [], "mpe": []}
     fig_number = 20  # To plot all data from ARIMA models.
     for p in p_list:
         for q in q_list:
@@ -157,6 +175,8 @@ def main():
                     results["d"].append(d)
                     results["q"].append(q)
                     results["mse"].append(my_arima.mse)
+                    results["mpe"].append(my_arima.mpe)
+
                 except Exception as e:
                     print(p, d, q, "\n", e)
 
@@ -169,11 +189,17 @@ def main():
     results = pd.DataFrame(results)
     print(results, "\n\n\n")
 
-    # Reshape into a matrix to plot heatmap.
-    heat_df = results.pivot(index='p', columns='q', values='mse')
+    # Reshape into a matrix to plot heatmap (MSE).
+    heat_df_mse = results.pivot(index='p', columns='q', values='mse')
     fig, ax = plt.subplots()
-    ax = seaborn.heatmap(heat_df, cmap='GnBu', annot=True)
+    ax = seaborn.heatmap(heat_df_mse, cmap='GnBu', annot=True)
     plt.title('Mean squared error')
+
+    # Reshape into a matrix to plot heatmap (MPE).
+    heat_df_mpe = results.pivot(index='p', columns='q', values='mpe')
+    fig, ax = plt.subplots()
+    ax = seaborn.heatmap(heat_df_mpe, cmap='GnBu', annot=True, fmt='.2f')
+    plt.title('Mean percentage error')
 
     best = results["mse"].idxmin()
     print("BEST:\n", results.loc[best])
