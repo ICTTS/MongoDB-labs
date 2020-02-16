@@ -11,6 +11,7 @@ from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 # import time
 import numpy as np
+import seaborn
 
 
 def read_file(filename):
@@ -70,17 +71,16 @@ def find_missing(lst):
 
 def main():
     """Do."""
-    print("Start")
+    print("--- Start ---\n")
     df = read_file("Torino.csv")
     df = df.rename(columns={'count': 'rental'})
     df["hour"] = df["hour"].values.astype(int)  # Convert hour to int
 
     # Find missing values.
     missing_values = find_missing(df["hour"])
-    print("Missing values:", missing_values)
-    print("Filling with average value")
-
+    print("/!\\ Missing values:", missing_values)
     mean_h = round(np.mean(df["rental"]))
+    print("--> Filling with average value: %d\n" % mean_h)
     miss_value = pd.DataFrame({"hour": missing_values,
                                "rental": mean_h.astype(int)})
 
@@ -109,9 +109,9 @@ def main():
     plt.title('Partial Autocorrelation Function - no. lags: %d' % n_lags)
     plt.grid(which='both')
 
-    # ARIMA model
+    # ARIMA model test
     p = 2
-    d = 0
+    d = 0  # Because...
     q = 2
 
     model = ARIMA(df["rental"], order=(p, d, q))
@@ -139,11 +139,11 @@ def main():
     X = df.rental.values.astype(float)
     print("Starting ARIMA model.""")
     train_size = 24*14
-    test_size = 96
-    p_list = [0, 1, 2, 3, 4, 5]
+    test_size = 24*7
+    p_list = [0, 1, 2]
     q_list = [0, 1, 2]
     d_list = [0]
-    # grid_search = np.zeros((len(p_list), len(q_list)))
+
     results = {"p": [], "d": [], "q": [], "mse": []}
     fig_number = 20  # To plot all data from ARIMA models.
     for p in p_list:
@@ -168,13 +168,21 @@ def main():
     # Convert results into a dataframe.
     results = pd.DataFrame(results)
     print(results, "\n\n\n")
+
+    # Reshape into a matrix to plot heatmap.
+    heat_df = results.pivot(index='p', columns='q', values='mse')
+    fig, ax = plt.subplots()
+    ax = seaborn.heatmap(heat_df, cmap='GnBu', annot=True)
+    plt.title('Mean squared error')
+
     best = results["mse"].idxmin()
-    print("BEST:", results.loc[best])
+    print("BEST:\n", results.loc[best])
 
     # Select best model and plot new forecasts.
-    p = 1
-    d = 0
-    q = 1
+    p = results.loc[best]['p'].astype(int)
+    d = 1
+    q = results.loc[best]['q'].astype(int)
+
     model = ARIMA(df["rental"], order=(p, d, q))
     model_fit = model.fit(disp=True)
     plt.figure()
