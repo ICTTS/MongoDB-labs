@@ -9,7 +9,7 @@ from sklearn.metrics import (mean_squared_error, mean_absolute_error,
                              r2_score)
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
-import time
+# import time
 import numpy as np
 import seaborn
 
@@ -78,7 +78,7 @@ def find_missing(lst):
 def main():
     """Do."""
     print("--- Start ---\n")
-    df = read_file("Torino.csv")
+    df = read_file("Wien.csv")
     df = df.rename(columns={'count': 'rental'})
     df["hour"] = df["hour"].values.astype(int)  # Convert hour to int
 
@@ -158,8 +158,8 @@ def main():
     print("Starting ARIMA model.""")
     train_size = 24*7
     test_size = 24*7
-    p_list = [0, 1]
-    q_list = [0, 1]
+    p_list = [0, 1, 3, 4, 5]
+    q_list = [0, 1, 2]
     d_list = [0]
 
     results = {"p": [], "d": [], "q": [], "mse": [], "mpe": []}
@@ -169,7 +169,7 @@ def main():
             for d in d_list:
                 try:
                     my_arima = RunArima(X, train_size, test_size, p, d, q)
-                    my_arima.run(shift=1)
+                    my_arima.run(shift=0)
                     my_arima.plot_arima(fig_number)
                     results["p"].append(p)
                     results["d"].append(d)
@@ -177,8 +177,8 @@ def main():
                     results["mse"].append(my_arima.mse)
                     results["mpe"].append(my_arima.mpe)
 
-                except Exception as e:
-                    print(p, d, q, "\n", e)
+                except Exception:
+                    print(p, d, q, "\n")
 
     # Plot original test data.
     plt.figure(fig_number)
@@ -201,15 +201,43 @@ def main():
     ax = seaborn.heatmap(heat_df_mpe, cmap='GnBu', annot=True, fmt='.2f')
     plt.title('Mean percentage error')
 
-    best = results["mse"].idxmin()
-    print("BEST:\n", results.loc[best])
+    # Select best model and plot new forecasts.
+    best = results["mpe"].idxmin()
+    p = results.loc[best]['p'].astype(int)
+    d = 0
+    q = results.loc[best]['q'].astype(int)
+    order = (p, d, q)
+    print("BEST: ", order)
+
+    results = {"N": [], "shift": [], "mse": [], "mpe": []}
+    # fig_number = 100  # To plot all data from ARIMA models.
+
+    # Change training window size.
+    train_size_list = [24*x for x in range(5, 15)]
+    test_size = 24*7
+    for train_size in train_size_list:
+        for shift in [0, 1]:
+            try:
+                my_arima = RunArima(X, train_size, test_size, p, d, q)
+                my_arima.run(shift=0)
+                results["N"].append(train_size)
+                results["shift"].append(shift)
+                results["mse"].append(my_arima.mse)
+                results["mpe"].append(my_arima.mpe)
+
+            except Exception:
+                print(p, d, q, "\n")
+
+    # Convert results into a dataframe.
+    results = pd.DataFrame(results)
+    print(results, "\n\n\n")
 
     # Select best model and plot new forecasts.
-    p = results.loc[best]['p'].astype(int)
-    d = 1
-    q = results.loc[best]['q'].astype(int)
+    best = results["mpe"].idxmin()
+    N = results.loc[best]['N'].astype(int)
+    print("BEST: N: %d, shift: %d" % (N, shift))
 
-    model = ARIMA(df["rental"], order=(p, d, q))
+    model = ARIMA(df["rental"], order=(order))
     model_fit = model.fit(disp=True)
     plt.figure()
     plt.plot(df["rental"])
