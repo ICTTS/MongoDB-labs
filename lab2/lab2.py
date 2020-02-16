@@ -13,6 +13,8 @@ from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 import numpy as np
 import seaborn
 
+CITY = "Wien"
+
 
 def read_file(filename):
     """Read file and return dataframe."""
@@ -45,7 +47,7 @@ class RunArima(object):
         # Make predictions
         for t in range(self.test_size):
             model = ARIMA(history, order=(self.order))
-            model_fit = model.fit(disp=0, maxiter=500, method='css')
+            model_fit = model.fit(disp=0, maxiter=200, method='css')
             y_hat = model_fit.forecast()[0]
             self.predictions.append(y_hat)
             history.append(self.test[t])
@@ -54,6 +56,7 @@ class RunArima(object):
                 history = history[1:]
 
         self.mae = mean_absolute_error(self.test, self.predictions)
+        self.mape = self.mae/np.mean(self.test)*100
         self.mse = mean_squared_error(self.test, self.predictions)
         N = len(self.test)
         summer = [abs((a - b)/a) for a, b in zip(self.test, self.predictions)]
@@ -78,7 +81,7 @@ def find_missing(lst):
 def main():
     """Do."""
     print("--- Start ---\n")
-    df = read_file("Wien.csv")
+    df = read_file(CITY + ".csv")
     df = df.rename(columns={'count': 'rental'})
     df["hour"] = df["hour"].values.astype(int)  # Convert hour to int
 
@@ -128,7 +131,7 @@ def main():
     plt.grid(which='both')
 
     # ARIMA model test
-    p = 2
+    p = 2  # Looking at the PACF
     d = 0  # Because it is stationary
     q = 2
 
@@ -158,11 +161,11 @@ def main():
     print("Starting ARIMA model.""")
     train_size = 24*7
     test_size = 24*7
-    p_list = [0, 1, 3, 4, 5]
+    p_list = [0, 1, 2, 3, 4, 5, 6]
     q_list = [0, 1, 2]
     d_list = [0]
 
-    results = {"p": [], "d": [], "q": [], "mse": [], "mpe": []}
+    results = {"p": [], "d": [], "q": [], "mse": [], "mpe": [], "mape": []}
     fig_number = 20  # To plot all data from ARIMA models.
     for p in p_list:
         for q in q_list:
@@ -176,6 +179,7 @@ def main():
                     results["q"].append(q)
                     results["mse"].append(my_arima.mse)
                     results["mpe"].append(my_arima.mpe)
+                    results["mape"].append(my_arima.mape)
 
                 except Exception:
                     print(p, d, q, "\n")
@@ -201,6 +205,11 @@ def main():
     ax = seaborn.heatmap(heat_df_mpe, cmap='GnBu', annot=True, fmt='.2f')
     plt.title('Mean percentage error')
 
+    heat_df_mape = results.pivot(index='p', columns='q', values='mape')
+    fig, ax = plt.subplots()
+    ax = seaborn.heatmap(heat_df_mape, cmap='GnBu', annot=True, fmt='.2f')
+    plt.title('Mean absolute percentage error')
+
     # Select best model and plot new forecasts.
     best = results["mpe"].idxmin()
     p = results.loc[best]['p'].astype(int)
@@ -209,11 +218,11 @@ def main():
     order = (p, d, q)
     print("BEST: ", order)
 
-    results = {"N": [], "shift": [], "mse": [], "mpe": []}
+    results = {"N": [], "shift": [], "mse": [], "mpe": [], "mape": []}
     # fig_number = 100  # To plot all data from ARIMA models.
 
     # Change training window size.
-    train_size_list = [24*x for x in range(5, 15)]
+    train_size_list = [24*x for x in range(3, 7)]
     test_size = 24*7
     for train_size in train_size_list:
         for shift in [0, 1]:
@@ -224,6 +233,7 @@ def main():
                 results["shift"].append(shift)
                 results["mse"].append(my_arima.mse)
                 results["mpe"].append(my_arima.mpe)
+                results["mape"].append(my_arima.mape)
 
             except Exception:
                 print(p, d, q, "\n")
@@ -237,8 +247,9 @@ def main():
     N = results.loc[best]['N'].astype(int)
     print("BEST: N: %d, shift: %d" % (N, shift))
 
+    # Final model 1
     model = ARIMA(df["rental"], order=(order))
-    model_fit = model.fit(disp=True)
+    model_fit = model.fit(disp=True, maxiter=200, method="css-mle")
     plt.figure()
     plt.plot(df["rental"])
     plt.plot(model_fit.fittedvalues)
@@ -249,6 +260,24 @@ def main():
 
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
+    plt.title(CITY + " order = " + str(order))
+
+    # Test overfitted model.
+    plt.show()
+    order = (26, 0, 1)
+    model = ARIMA(df["rental"], order=(order))
+    model_fit = model.fit(disp=True, maxiter=400, method="css-mle")
+    plt.figure()
+    plt.plot(df["rental"])
+    plt.plot(model_fit.fittedvalues)
+    plt.grid(which='both')
+    plt.legend(["Data", "Fitted"])
+    fig, ax = plt.subplots()
+    df.rental.iloc[650:].plot(ax=ax)
+
+    model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
+                           plot_insample=False)
+    plt.title(CITY + " order = " + str(order))
 
 
 def read_csv(filename):
