@@ -67,7 +67,7 @@ class RunArima(object):
 
     def plot_arima(self, fig_number):
         """Plot results."""
-        plt.figure(fig_number)
+        plt.figure(fig_number, constrained_layout=True)
         plt.plot(self.predictions, label="order = %s" % (str(self.order)))
         plt.grid(which='both')
 
@@ -76,6 +76,26 @@ def find_missing(lst):
     """Find missing data in a sequence."""
     return [i for x, y in zip(lst, lst[1:])
             for i in range(x + 1, y) if y - x > 1]
+
+
+def plot_residuals(model_fit, n_bins=20, title="Residuals"):
+    """Plot residuals and KDE histogram."""
+    residuals = pd.DataFrame(model_fit.resid)
+    residuals.plot(c='r', title="Residuals", legend=False)
+    fig, ax = plt.subplots(constrained_layout=True)
+    residuals.plot(ax=ax, title="KDE of residuals", kind='kde',
+                   legend=False)
+    residuals.plot(ax=ax, color='#aabad7', edgecolor='white', kind='hist',
+                   density=True, bins=n_bins)
+    plt.grid(which='both')
+    plt.title(title)
+    ax.legend(["KDE", "Density %s bins" % n_bins])
+
+
+def read_csv(filename):
+    """Read csv and save to dataframe."""
+    df = pd.read_csv(filename, index_col=0)
+    return df
 
 
 def main():
@@ -102,7 +122,7 @@ def main():
     roll_days = 7
     df['MA'] = df['rental'].rolling(24*roll_days).mean()
     df['MS'] = df['rental'].rolling(24*roll_days).std()
-    plt.figure()
+    plt.figure(constrained_layout=True)
     plt.plot(df['rental'], label='Number of rentals')
     plt.plot(df['MA'], label='Moving average')
     plt.plot(df['MS'], label='Moving SD')
@@ -111,21 +131,21 @@ def main():
     plt.legend()
 
     # ACF
-    plt.figure()
+    plt.figure(constrained_layout=True)
     pd.plotting.autocorrelation_plot(df["rental"])
     plt.title('Autocorrelation Function')
     plt.grid(which='both')
 
     # ACF
     n_lags = 48
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     plot_acf(df["rental"], ax=ax, lags=n_lags)
     plt.title('Autocorrelation Function - no. lags: %d' % n_lags)
     plt.grid(which='both')
 
     # PACF
     n_lags = 48
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     plot_pacf(df["rental"], ax=ax, lags=n_lags)
     plt.title('Partial Autocorrelation Function - no. lags: %d' % n_lags)
     plt.grid(which='both')
@@ -134,31 +154,20 @@ def main():
     p = 2  # Looking at the PACF
     d = 0  # Because it is stationary
     q = 2
-
-    model = ARIMA(df["rental"], order=(p, d, q))
+    order = (p, d, q)
+    model = ARIMA(df["rental"], order=order)
     model_fit = model.fit(disp=True)
-    plt.figure()
+    plt.figure(constrained_layout=True)
     plt.plot(df["rental"])
     plt.plot(model_fit.fittedvalues)
     plt.grid(which='both')
     plt.legend(["Data", "Fitted"])
 
     # Redisuals
-    residuals = pd.DataFrame(model_fit.resid)
-    residuals.plot(c='r', title="Residuals", legend=False)
-    plt.grid(which='both')
+    plot_residuals(model_fit, 20, "Residuals; order = %s" % str(order))
 
-    fig, ax = plt.subplots()
-    residuals.plot(ax=ax, title="KDE of residuals", kind='kde',
-                   legend=False)
-    n_bins = 20
-    residuals.plot(ax=ax, color='#aabad7', edgecolor='white', kind='hist',
-                   density=True, bins=n_bins)
-    plt.grid(which='both')
-    ax.legend(["KDE", "Density %s bins" % n_bins])
-
-    X = df.rental.values.astype(float)
     print("Starting ARIMA model.""")
+    X = df.rental.values.astype(float)
     train_size = 24*7
     test_size = 24*7
     p_list = [0, 1, 2, 3, 4, 5, 6]
@@ -185,7 +194,7 @@ def main():
                     print(p, d, q, "\n")
 
     # Plot original test data.
-    plt.figure(fig_number)
+    plt.figure(fig_number, constrained_layout=True)
     plt.plot(X[train_size:train_size + test_size], label="Data")
     plt.legend()
 
@@ -195,18 +204,18 @@ def main():
 
     # Reshape into a matrix to plot heatmap (MSE).
     heat_df_mse = results.pivot(index='p', columns='q', values='mse')
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mse, cmap='GnBu', annot=True)
     plt.title('Mean squared error')
 
     # Reshape into a matrix to plot heatmap (MPE).
     heat_df_mpe = results.pivot(index='p', columns='q', values='mpe')
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mpe, cmap='GnBu', annot=True, fmt='.2f')
     plt.title('Mean percentage error')
 
     heat_df_mape = results.pivot(index='p', columns='q', values='mape')
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mape, cmap='GnBu', annot=True, fmt='.2f')
     plt.title('Mean absolute percentage error')
 
@@ -250,40 +259,36 @@ def main():
     # Final model 1
     model = ARIMA(df["rental"], order=(order))
     model_fit = model.fit(disp=True, maxiter=200, method="css-mle")
-    plt.figure()
+    plt.figure(constrained_layout=True)
     plt.plot(df["rental"])
     plt.plot(model_fit.fittedvalues)
     plt.grid(which='both')
     plt.legend(["Data", "Fitted"])
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     df.rental.iloc[650:].plot(ax=ax)
 
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
     plt.title(CITY + " order = " + str(order))
+    plot_residuals(model_fit, 20, "Residuals; order = %s" % str(order))
 
     # Test overfitted model.
     plt.show()
     order = (26, 0, 1)
     model = ARIMA(df["rental"], order=(order))
     model_fit = model.fit(disp=True, maxiter=400, method="css-mle")
-    plt.figure()
+    plt.figure(constrained_layout=True)
     plt.plot(df["rental"])
     plt.plot(model_fit.fittedvalues)
     plt.grid(which='both')
     plt.legend(["Data", "Fitted"])
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(constrained_layout=True)
     df.rental.iloc[650:].plot(ax=ax)
 
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
     plt.title(CITY + " order = " + str(order))
-
-
-def read_csv(filename):
-    """Read csv and save to dataframe."""
-    df = pd.read_csv(filename, index_col=0)
-    return df
+    plot_residuals(model_fit, 20, "Residuals; order = %s" % str(order))
 
 
 if __name__ == '__main__':
