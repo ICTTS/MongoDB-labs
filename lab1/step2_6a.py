@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Step 2.6a
+"""Step 2.6a.
+
+Plot the parking position of cars in different times using google map. You can
+use the Google Fusion Tables to get the plot in minutes.
 """
 import pymongo as pm
-import time
-import datetime
 import pandas as pd
 
 COLLECTION = 'PermanentParkings'
@@ -13,7 +13,7 @@ CITY = "Torino"
 
 
 def get_collection():
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -25,6 +25,7 @@ def get_collection():
 
 
 def main():
+    """Define main function."""
     collection = get_collection()
     my_collection = list(collection.aggregate(
         [
@@ -36,7 +37,9 @@ def main():
         ]))
     data = []
     for i in my_collection:
-        data.append([i['loc']['coordinates'][0], i['loc']['coordinates'][1], i['hour_of_day']])
+        data.append([i['loc']['coordinates'][0],
+                     i['loc']['coordinates'][1],
+                     i['hour_of_day']])
 
     df = pd.DataFrame(data, columns=['longitude', 'latitude', 'Hour'])
 

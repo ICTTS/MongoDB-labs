@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sun Nov 10 16:53:07 2019.
+"""Step 2.4.
 
-Step 2.4
+Filtering data as above, consider the system utilization over time again. Are
+you able to filter outliers?
 """
 import pymongo as pm
 import matplotlib.pyplot as plt

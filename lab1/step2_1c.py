@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sat Nov  9 10:53:06 2019.
+"""Step 2.1.c.
 
-Step 2.1.c
+Does the CDF change over time (e.g., aggregate per each week of data, or per
+each day or the week)? Why?
 """
 import pymongo as pm
 import matplotlib.pyplot as plt

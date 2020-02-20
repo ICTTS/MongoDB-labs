@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Wed Nov 13 12:54:32 2019.
+"""Step 2.7.
 
-Step 2.7
+a) Extract those valid rentals for which there is also the data for alternative
+   transport systems.
+
+b) Consider one alternative transport system, e.g., public transports. Take the
+   duration, and divide it into time bins, e.g., [0,5)min, [5,10)min,
+   [10,15)min, … Compute then the number of rentals for each bin, i.e., the
+   probability of seeing a rental given the duration of public transport would
+   be in a given interval. Plot the obtained histogram, and try to comment the
+   results.
 """
 
 import pymongo as pm
@@ -114,6 +122,7 @@ def make_hist(array, bins, color, titled):
               ' duration')
     plt.xticks(ticks=bins, labels=bins)
     plt.savefig('step2_7' + titled + '.eps', format='eps')
+
 
 def main():
     """Call public transport function and make histograms."""

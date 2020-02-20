@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Step 1."""
+"""Step 1: Preliminary data analysis."""
 import pymongo as pm
 import time
 import datetime

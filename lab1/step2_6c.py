@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Step 2.6c
+"""Step 2.6c.
+
+Compute then the O-D matrix, i.e., the number of rentals starting in area i
+and ending in area j. Try to visualize the results in a meaningful way.
 """
 import pymongo as pm
 
@@ -10,7 +12,7 @@ CITY = "Torino"
 
 
 def get_collection():
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -22,6 +24,7 @@ def get_collection():
 
 
 def main():
+    """Define main function."""
     # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
     # 0.004495 verso nord e 0.006358 verso est
     dx = 0.006358
@@ -67,11 +70,9 @@ def main():
                 for k in range(32):
                     for w in range(32):
                         file.write('''\"<LineString><coordinates>
-{},{},0 {},{},0 
+{},{},0 {},{},0
 </coordinates></LineString>\",{}\n'''.format(x + j * dx, y + i * dy, x + (w + 1) * dx, y + k * dy, density[i][j][k][w]))
 
 
 if __name__ == '__main__':
     main()
-
-
