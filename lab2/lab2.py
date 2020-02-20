@@ -280,7 +280,7 @@ def main():
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
     plt.title(CITY + " order = " + str(order))
-    plot_residuals(model_fit, 20, "Residuals; order = %s" % str(order))
+    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
 
     # Test overfitted model.
     plt.show()
@@ -298,7 +298,7 @@ def main():
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
     plt.title(CITY + " order = " + str(order))
-    plot_residuals(model_fit, 20, "Residuals; order = %s" % str(order))
+    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
 
 
 if __name__ == '__main__':
