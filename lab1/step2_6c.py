@@ -4,6 +4,7 @@
 Step 2.6c
 """
 import pymongo as pm
+import pprint
 
 COLLECTION = 'PermanentBookings'
 CITY = "Torino"
@@ -28,7 +29,7 @@ def main():
     dy = 0.004495
     x = 7.576
     y = 45
-    density = [[[[0] * 32 for i in range(32)] * 32 for j in range(32)] * 32 for k in range(32)]
+    density = [[[[0] * 32 for i in range(32)]* 32 for j in range(32)]* 32 for k in range(32)]
     collection = get_collection()
     START_HOUR = 18
     END_HOUR = 24
@@ -37,7 +38,7 @@ def main():
         for j in range(32):
             for k in range(32):
                 for w in range(32):
-                    density[i][j] = len(list(collection.aggregate(
+                    coursor = collection.aggregate(
                         [
                             {'$match': {'city': CITY}},
                             {'$project': {'_id': 0,
@@ -58,18 +59,10 @@ def main():
                                         'destination_y': {'$gte': y + k * dy, '$lt': y + (k + 1) * dy}}
                              },
                             {"$group": {'_id': 0, 'count': {'$sum': 1}}}
-                        ])))
+                        ])
+                    density[i][j][k][w] = len(list(coursor))
 
-    with open('OD.csv', 'w') as file:
-        file.write('geometry,flow\n')
-        for i in range(32):
-            for j in range(32):
-                for k in range(32):
-                    for w in range(32):
-                        file.write('''\"<LineString><coordinates>
-{},{},0 {},{},0 
-</coordinates></LineString>\",{}\n'''.format(x + j * dx, y + i * dy, x + (w + 1) * dx, y + k * dy, density[i][j][k][w]))
-
+    print("finished")
 
 if __name__ == '__main__':
     main()
