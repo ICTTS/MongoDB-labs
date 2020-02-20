@@ -129,27 +129,33 @@ def main():
     plt.plot(df['MS'], linewidth=2, label='Moving SD')
     plt.title(CITY + '; Rolling statistics; Window = %d days' % roll_days)
     plt.grid(which='both')
+    plt.xlabel("Hours")
+    plt.ylabel("Number of rentals")
     plt.legend()
 
     # ACF
     plt.figure(constrained_layout=True)
     pd.plotting.autocorrelation_plot(df["rental"])
-    plt.title('Autocorrelation Function')
-    plt.grid(which='both')
+    plt.title(CITY + '; Autocorrelation Function')
+    plt.grid()
 
     # ACF
     n_lags = 48
     fig, ax = plt.subplots(constrained_layout=True)
     plot_acf(df["rental"], ax=ax, lags=n_lags)
-    plt.title('Autocorrelation Function - no. lags: %d' % n_lags)
+    plt.title(CITY + '; Autocorrelation Function; Lags: %d' % n_lags)
     plt.grid(which='both')
+    plt.xlabel("Lag")
+    plt.ylabel("Autocorrelation")
 
     # PACF
     n_lags = 48
     fig, ax = plt.subplots(constrained_layout=True)
     plot_pacf(df["rental"], ax=ax, lags=n_lags)
-    plt.title('Partial Autocorrelation Function - no. lags: %d' % n_lags)
+    plt.title(CITY + '; Partial Autocorrelation Function; Lags: %d' % n_lags)
     plt.grid(which='both')
+    plt.xlabel("Lag")
+    plt.ylabel("Partial Autocorrelation")
 
     # ARIMA model test
     p = 2  # Looking at the PACF
@@ -163,9 +169,12 @@ def main():
     plt.plot(model_fit.fittedvalues)
     plt.grid(which='both')
     plt.legend(["Data", "Fitted"])
+    plt.title(CITY + "; Real and fitted data; order = %s" % str(order))
+    plt.xlabel("Hours")
+    plt.ylabel("Number of rentals")
 
     # Redisuals
-    plot_residuals(model_fit, 20, 2000, "Residuals; order = %s" % str(order))
+    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
 
     print("Starting ARIMA model.""")
     X = df.rental.values.astype(float)
@@ -221,7 +230,7 @@ def main():
     plt.title('Mean absolute percentage error')
 
     # Select best model and plot new forecasts.
-    best = results["mpe"].idxmin()
+    best = results["mape"].idxmin()
     p = results.loc[best]['p'].astype(int)
     d = 0
     q = results.loc[best]['q'].astype(int)
@@ -253,7 +262,7 @@ def main():
     print(results, "\n\n\n")
 
     # Select best model and plot new forecasts.
-    best = results["mpe"].idxmin()
+    best = results["mape"].idxmin()
     N = results.loc[best]['N'].astype(int)
     print("BEST: N: %d, shift: %d" % (N, shift))
 
