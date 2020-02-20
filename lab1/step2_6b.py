@@ -65,13 +65,21 @@ def main():
             for j in range(32):
                 file.write('''\"<Polygon><outerBoundaryIs><LinearRing><coordinates>
 {},{},0 {},{},0 {},{},0 {},{},0 {},{},0
-</coordinates></LinearRing></outerBoundaryIs></Polygon>\",{}\n'''.format(x + j * dx, y + i * dy,
-                                                                         x + (j + 1) * dx, y + i * dy,
-                                                                         x + (j + 1) * dx, y + (i + 1) * dy,
-                                                                         x + j * dx, y + (i + 1) * dy,
-                                                                         x + j * dx, y + i * dy, density[i][j]))
+</coordinates></LinearRing></outerBoundaryIs></Polygon>\",{}\n'''.format(
+                                                            x + j*dx,
+                                                            y + i*dy,
+                                                            x + (j+1)*dx,
+                                                            y + i * dy,
+                                                            x + (j+1)*dx,
+                                                            y + (i+1)*dy,
+                                                            x + j*dx,
+                                                            y + (i+1)*dy,
+                                                            x + j*dx,
+                                                            y + i*dy,
+                                                            density[i][j]))
 
 
-#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,0 7.576,45.004495,0 7.576,45.0,0
+#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,
+#  0 7.576,45.004495,0 7.576,45.0,0
 if __name__ == '__main__':
     main()
