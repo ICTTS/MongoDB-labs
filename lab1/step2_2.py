@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sat Nov  9 10:53:06 2019.
-
-Step 2.2
+"""Step 2.2.
 
 Consider the system utilization over time: aggregate rentals per hour of the
 day, and then plot the number of booked/parked cars (or percentage of

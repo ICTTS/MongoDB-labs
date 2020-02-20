@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Step 2.6c
+"""Step 2.6c.
+
+Compute then the O-D matrix, i.e., the number of rentals starting in area i
+and ending in area j. Try to visualize the results in a meaningful way.
 """
 import pymongo as pm
 import pprint
@@ -11,7 +13,7 @@ CITY = "Torino"
 
 
 def get_collection():
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -23,6 +25,7 @@ def get_collection():
 
 
 def main():
+    """Define main function."""
     # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
     # 0.004495 verso nord e 0.006358 verso est
     dx = 0.006358
@@ -41,22 +44,39 @@ def main():
                     coursor = collection.aggregate(
                         [
                             {'$match': {'city': CITY}},
+                            {'$project':
+                                {'_id': 0,
+                                 'origin': {'$arrayElemAt':
+                                            ["$origin_destination.coordinates",
+                                             0]},
+                                 'destination':
+                                     {'$arrayElemAt':
+                                         ["$origin_destination.coordinates",
+                                          1]},
+                                 'hour_of_day': {'$hour': '$init_date'}
+                                 }},
+                            {'$match': {'hour_of_day': {'$gte': START_HOUR,
+                                                        '$lt': END_HOUR}}},
                             {'$project': {'_id': 0,
-                                          'origin': {'$arrayElemAt': ["$origin_destination.coordinates", 0]},
-                                          'destination': {'$arrayElemAt': ["$origin_destination.coordinates", 1]},
-                                          'hour_of_day': {'$hour': '$init_date'}
+                                          'origin_x': {'$arrayElemAt':
+                                                       ["$origin", 0]},
+                                          'origin_y': {'$arrayElemAt':
+                                                       ["$origin", 0]},
+                                          'destination_x': {'$arrayElemAt':
+                                                            ["$destination",
+                                                             0]},
+                                          'destination_y': {'$arrayElemAt':
+                                                            ["$destination",
+                                                             0]}
                                           }},
-                            {'$match': {'hour_of_day': {'$gte': START_HOUR, '$lt': END_HOUR}}},
-                            {'$project': {'_id': 0,
-                                          'origin_x': {'$arrayElemAt': ["$origin", 0]},
-                                          'origin_y': {'$arrayElemAt': ["$origin", 0]},
-                                          'destination_x': {'$arrayElemAt': ["$destination", 0]},
-                                          'destination_y': {'$arrayElemAt': ["$destination", 0]}
-                                          }},
-                            {'$match': {'origin_x': {'$gte': x + j * dx, '$lt': x + (j + 1) * dx},
-                                        'origin_y': {'$gte': y + i * dy, '$lt': y + (i + 1) * dy},
-                                        'destination_x': {'$gte': x + w * dx, '$lt': x + (w + 1) * dx},
-                                        'destination_y': {'$gte': y + k * dy, '$lt': y + (k + 1) * dy}}
+                            {'$match': {'origin_x': {'$gte': x + j * dx,
+                                                     '$lt': x + (j+1) * dx},
+                                        'origin_y': {'$gte': y + i * dy,
+                                                     '$lt': y + (i+1) * dy},
+                                        'destination_x': {'$gte': x + w * dx,
+                                                          '$lt': x + (w+1)*dx},
+                                        'destination_y': {'$gte': y + k * dy,
+                                                          '$lt': y + (k+1)*dy}}
                              },
                             {"$group": {'_id': 0, 'count': {'$sum': 1}}}
                         ])
@@ -66,5 +86,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sat Nov  9 10:53:06 2019.
+"""Step 2.1.a.
 
-Step 2.1.a
+Which of the CDF is longer? Are there some outliers?
 """
 import pymongo as pm
 import matplotlib.pyplot as plt

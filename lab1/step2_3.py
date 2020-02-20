@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sun Nov 10 15:36:31 2019.
+"""Step 2.3.
 
-Step 2.3
+Derive a filtering criteria to filter possible outliers (booking periods that
+are too short/too long), so to obtain rentals from bookings, filtering system
+issues or problems with the data collection.
 """
 import pymongo as pm
 import matplotlib.pyplot as plt

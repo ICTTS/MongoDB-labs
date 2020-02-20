@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Step 2.6a
+"""Step 2.6b.
+
+Divide the area using a simple squared grid of 500mx500m and compute the
+density of cars in each area, and plot the results using a heatmap (i.e.,
+assigning a different colour to each square to represent the densities of
+cars).
 """
 import pymongo as pm
-import pandas as pd
 
 COLLECTION = 'PermanentParkings'
 CITY = "Torino"
 
 
 def get_collection():
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -24,6 +27,7 @@ def get_collection():
 
 
 def main():
+    """Define main function."""
     # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
     # 0.004495 verso nord e 0.006358 verso est
     dx = 0.006358
@@ -39,16 +43,17 @@ def main():
         for j in range(32):
             density[i][j] = len(list(collection.aggregate([
                 {'$match': {'city': CITY}},
-                {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'}, 'loc': 1}},
+                {'$project': {'_id': 0, 'hour_of_day': {'$hour': '$init_date'},
+                              'loc': 1}},
                 {'$match': {
                     'hour_of_day': {'$gte': START_HOUR, '$lt': END_HOUR},
                     "loc": {"$geoWithin": {
                         "$geometry": {
                             "type": "Polygon",
                             "coordinates": [[[x + j * dx, y + i * dy],
-                                            [x + (j + 1) * dx, y + i * dy],
-                                            [x + (j + 1) * dx, y + (i + 1) * dy],
-                                            [x + j * dx, y + (i + 1) * dy],
+                                            [x + (j+1) * dx, y + i * dy],
+                                            [x + (j+1) * dx, y + (i+1) * dy],
+                                            [x + j * dx, y + (i+1) * dy],
                                             [x + j * dx, y + i * dy]]]
                         }}}}},
                 {"$group": {'_id': "$loc", 'count': {'$sum': 1}}}
@@ -59,14 +64,22 @@ def main():
         for i in range(32):
             for j in range(32):
                 file.write('''\"<Polygon><outerBoundaryIs><LinearRing><coordinates>
-{},{},0 {},{},0 {},{},0 {},{},0 {},{},0 
-</coordinates></LinearRing></outerBoundaryIs></Polygon>\",{}\n'''.format(x + j * dx, y + i * dy,
-                                                                         x + (j + 1) * dx, y + i * dy,
-                                                                         x + (j + 1) * dx, y + (i + 1) * dy,
-                                                                         x + j * dx, y + (i + 1) * dy,
-                                                                         x + j * dx, y + i * dy, density[i][j]))
+{},{},0 {},{},0 {},{},0 {},{},0 {},{},0
+</coordinates></LinearRing></outerBoundaryIs></Polygon>\",{}\n'''.format(
+                                                            x + j*dx,
+                                                            y + i*dy,
+                                                            x + (j+1)*dx,
+                                                            y + i * dy,
+                                                            x + (j+1)*dx,
+                                                            y + (i+1)*dy,
+                                                            x + j*dx,
+                                                            y + (i+1)*dy,
+                                                            x + j*dx,
+                                                            y + i*dy,
+                                                            density[i][j]))
 
 
-#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,0 7.576,45.004495,0 7.576,45.0,0
+#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,
+#  0 7.576,45.004495,0 7.576,45.0,0
 if __name__ == '__main__':
     main()

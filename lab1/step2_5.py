@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Mon Nov 11 21:47:58 2019.
+"""Step 2.5.
 
-Step 2.5
+Filtering the data as above, compute the average, median, standard deviation,
+and percentiles of the booking/parking duration over time (e.g., per each day
+of the collection).
+
+a) Does it change over time?
+b) Is it possible to spot any periodicity (e.g., weekends vs week days,
+   holidays versus working periods)?
 """
 
 import pymongo as pm
@@ -20,81 +26,82 @@ high_limit = 3*60*60  # Three hours
 
 
 def get_collection(coll):
-    """Connection to database."""
+    """Connect to database."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
                             tlsAllowInvalidCertificates=True)
-    db = client['carsharing'] #Choose the DB to use
-    db.authenticate('ictts', 'Ictts16!')#, mechanism='MONGODB-CR') #authentication
+    db = client['carsharing']
+    db.authenticate('ictts', 'Ictts16!')
     collection = db[coll]
     return collection
 
 
 def actual_rentals(collection, city, start_time, end_time):
     my_collection = list(collection.aggregate([
-                {'$match':{
-                    '$and':[
+        {'$match': {
+                '$and': [
                     {'city': city},
                     {'init_time': {'$gte': start_time, '$lt': end_time}}]
-                    }
-                },
-                {'$project':{
-                    '_id':0,
-                    'duration': {'$subtract': ['$final_time','$init_time']},
-                    'moved': {'$ne': [
-                            {'$arrayElemAt': ['$origin_destination.coordinates',
-                                              0]},
-                            {'$arrayElemAt': ['$origin_destination.coordinates',
-                                              1]}]}
-                    }
-                },
-                {'$match':
-                    {
-                    'moved': True,
-                    'duration': {'$gt': low_limit, '$lt': high_limit}
-                    }
-                },
-                {'$sort':{
-                    'duration': 1
-                }},
-                {'$group':{
-                '_id':'null',
-                'mean': {'$avg': '$duration'},
-                'std': {'$stdDevPop': '$duration'},
-                "durationArray": {"$push": "$duration"}}
-                }]))
+        }
+        },
+        {'$project': {
+                '_id': 0,
+                'duration': {'$subtract': ['$final_time', '$init_time']},
+                'moved': {'$ne': [
+                        {'$arrayElemAt': ['$origin_destination.coordinates',
+                                          0]},
+                        {'$arrayElemAt': ['$origin_destination.coordinates',
+                                          1]}]}
+        }
+        },
+        {'$match': {
+            'moved': True,
+            'duration': {'$gt': low_limit, '$lt': high_limit}
+        }
+        },
+        {'$sort': {
+            'duration': 1
+        }
+        },
+        {'$group': {
+            '_id': 'null',
+            'mean': {'$avg': '$duration'},
+            'std': {'$stdDevPop': '$duration'},
+            "durationArray": {"$push": "$duration"}
+        }
+        }]))
 
     return my_collection[0]
 
 
 def actual_parkings(collection, city, start_time, end_time):
     my_collection = list(collection.aggregate([
-            {'$match':{
-                '$and':[
+        {'$match': {
+            '$and': [
                 {'city': city},
                 {'init_time': {'$gte': start_time, '$lt': end_time}}]
-                }
-            },
-            {'$project':{
-                '_id':0,
-                'duration': {'$subtract': ['$final_time','$init_time']}
-                }
-            },
-            {'$match':
-                {
-                'duration': {'$gt': low_limit}
-                }
-            },
-            {'$sort':{
-                'duration': 1
-            }},
-            {'$group':{
-            '_id':'null',
+        }
+        },
+        {'$project': {
+            '_id': 0,
+            'duration': {'$subtract': ['$final_time', '$init_time']}
+        }
+        },
+        {'$match': {
+            'duration': {'$gt': low_limit}
+        }
+        },
+        {'$sort': {
+            'duration': 1
+        }},
+        {'$group': {
+            '_id': 'null',
             'mean': {'$avg': '$duration'},
             'std': {'$stdDevPop': '$duration'},
-            "durationArray": {"$push": "$duration"}}
-            }]))
+            "durationArray": {"$push": "$duration"}
+        }
+        }]))
 
     return my_collection[0]
 
@@ -106,7 +113,7 @@ def loop():
                              "%d/%m/%Y").timetuple())
     day_duration = 24*60*60
     end_time = start_time + day_duration
-    start_time_seattle = start_time -10*60*60
+    start_time_seattle = start_time - 10*60*60
     end_time_seattle = start_time_seattle + day_duration
 
     for coll in COLLECTION:
@@ -146,12 +153,10 @@ def loop():
                 time1 = time2
                 time2 = time2 + day_duration
 
-
             mean_plus = [float(i) + float(j) for i, j in zip(mean_vector,
                                                              std_vector)]
             mean_minus = [float(i) - float(j) for i, j in zip(mean_vector,
                                                               std_vector)]
-
 
             fig, ax = plt.subplots(constrained_layout=False, figsize=(9, 4))
             ax.plot(mean_vector, c=(0, 0.4470, 0.7410))
@@ -161,17 +166,19 @@ def loop():
             ax.plot(mean_minus, c=(0, 0.4470, 0.7410), ls='--')
             plt.xlabel("Day")
             plt.ylabel("Minutes")
-            plt.legend(["Mean", "Mean ± std", "Median", str(PERC)+
+            plt.legend(["Mean", "Mean ± std", "Median", str(PERC) +
                         "° Percentile"], loc=1)
             plt.title(coll + " in " + city)
-            plt.xticks(ticks=range(0,31), labels=range(1,32))
+            plt.xticks(ticks=range(0, 31), labels=range(1, 32))
             plt.grid(which='both')
             for xt in [0, 7, 14, 21, 28]:
-                    ax.axvline(x=xt, ls='-', c='grey')
-            print(coll+ " - " + city + ": Done")
+                ax.axvline(x=xt, ls='-', c='grey')
+            print(coll + " - " + city + ": Done")
             plt.savefig('step2_5' + coll + city + '.eps', format='eps')
 
+
 def main():
+    """Define main function."""
     loop()
     plt.show()
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Sun Nov 10 16:53:07 2019.
+"""Step 2.4.
 
-Step 2.4
+Filtering data as above, consider the system utilization over time again. Are
+you able to filter outliers?
 """
 import pymongo as pm
 import matplotlib.pyplot as plt
@@ -31,6 +32,8 @@ def days_aggregate(collection_name, city):
     collection = get_collection(collection_name)
     start = "01/10/2017"
     end = "01/11/2017"
+    low_limit = 2*60  # Two minutes
+    high_limit = 3*60*60  # Three hours
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/"
                                                         "%m/%Y").timetuple())
     end_time = time.mktime(datetime.datetime.strptime(end,
@@ -56,9 +59,22 @@ def days_aggregate(collection_name, city):
                                            "$init_time"]},
                 "dayOfYear": {"$dayOfYear": "$init_date"},
                 "hour": {"$floor": {"$divide": ["$init_time", 3600]}},
-                "dayOfWeek": {"$dayOfWeek": "$init_date"}
+                "dayOfWeek": {"$dayOfWeek": "$init_date"},
+                'moved': {'$ne': [
+                        {'$arrayElemAt':
+                            ['$origin_destination.coordinates',
+                             0]},
+                        {'$arrayElemAt':
+                            ['$origin_destination.coordinates',
+                             1]}]
+                        }
             }
             },
+            {'$match':
+                {'moved': True,
+                 'duration': {'$gt': low_limit, '$lt': high_limit}
+                 }
+             },
             {"$group": {
                 "_id": {"hour": "$hour"},
                 "count": {"$sum": 1}
