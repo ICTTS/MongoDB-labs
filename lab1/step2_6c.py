@@ -29,11 +29,11 @@ def main():
     """Define main function."""
     # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
     # 0.004495 verso nord e 0.006358 verso est
-    dx = 0.006358 * 2 * 8
-    dy = 0.004495 * 2 * 8
+    dx = 0.006358
+    dy = 0.004495
     x = 7.576
     y = 45
-    n = 2
+    n = 32
     density = [[[[0] * n for i in range(n)]* n for j in range(n)]* n for k in range(n)]
     collection = get_collection()
 
@@ -64,13 +64,13 @@ def main():
                                               'origin_x': {'$arrayElemAt':
                                                            ["$origin", 0]},
                                               'origin_y': {'$arrayElemAt':
-                                                           ["$origin", 0]},
+                                                           ["$origin", 1]},
                                               'destination_x': {'$arrayElemAt':
                                                                 ["$destination",
                                                                  0]},
                                               'destination_y': {'$arrayElemAt':
                                                                 ["$destination",
-                                                                 0]}
+                                                                 1]}
                                               }},
                                 {'$match': {'origin_x': {'$gte': x + j * dx,
                                                          '$lt': x + (j+1) * dx},
