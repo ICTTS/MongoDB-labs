@@ -91,6 +91,7 @@ def plot_residuals(model_fit, n_bins=20, xlim=4000, title="Residuals"):
     plt.title(title)
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
+    plt.ylim([0, 0.027])
 
 
 def read_csv(filename):
@@ -158,7 +159,7 @@ def main():
     plt.ylabel("Partial Autocorrelation")
 
     # ARIMA model test
-    p = 2  # Looking at the PACF
+    p = 5  # Looking at the PACF
     d = 0  # Because it is stationary
     q = 2
     order = (p, d, q)
@@ -174,7 +175,8 @@ def main():
     plt.ylabel("Number of rentals")
 
     # Redisuals
-    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
+    plot_residuals(model_fit, 20, 300,
+                   CITY + "; Residuals; order = %s" % str(order))
 
     print("Starting ARIMA model.""")
     X = df.rental.values.astype(float)
@@ -216,18 +218,19 @@ def main():
     heat_df_mse = results.pivot(index='p', columns='q', values='mse')
     fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mse, cmap='GnBu', annot=True)
-    plt.title('Mean squared error')
+    plt.title(CITY + '; Mean squared error')
 
     # Reshape into a matrix to plot heatmap (MPE).
     heat_df_mpe = results.pivot(index='p', columns='q', values='mpe')
     fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mpe, cmap='GnBu', annot=True, fmt='.2f')
-    plt.title('Mean percentage error')
+    plt.title(CITY + '; Mean percentage error')
 
+    # Reshape into a matrix to plot heatmap (MAPE).
     heat_df_mape = results.pivot(index='p', columns='q', values='mape')
     fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mape, cmap='GnBu', annot=True, fmt='.2f')
-    plt.title('Mean absolute percentage error')
+    plt.title(CITY + '; Mean absolute percentage error')
 
     # Select best model and plot new forecasts.
     best = results["mape"].idxmin()
@@ -241,13 +244,13 @@ def main():
     # fig_number = 100  # To plot all data from ARIMA models.
 
     # Change training window size.
-    train_size_list = [24*x for x in range(3, 7)]
+    train_size_list = [24*x for x in range(3, 16)]
     test_size = 24*7
     for train_size in train_size_list:
         for shift in [0, 1]:
             try:
                 my_arima = RunArima(X, train_size, test_size, p, d, q)
-                my_arima.run(shift=0)
+                my_arima.run(shift=shift)
                 results["N"].append(train_size)
                 results["shift"].append(shift)
                 results["mse"].append(my_arima.mse)
@@ -260,6 +263,20 @@ def main():
     # Convert results into a dataframe.
     results = pd.DataFrame(results)
     print(results, "\n\n\n")
+
+    mape_expanding = results.pivot(index='N', columns='shift', values='mape')
+    fig, ax = plt.subplots(constrained_layout=True)
+    print(mape_expanding)
+    plt.figure(constrained_layout=True)
+    plt.plot(mape_expanding, linestyle='-', marker='o', markersize=4)
+    # plt.plot(mape_expanding['shift'=1], '.-', label="Sliding window")
+    plt.title(CITY + '; Mean absolute percentage error')
+    plt.xticks(train_size_list)
+    plt.xlabel(r'N$_{\mathrm{train}}$' + ' (hours)')
+    plt.ylabel("MAPE")
+    plt.legend(["Expanding window", "Shifting window"])
+    plt.grid(which='both')
+    plt.show()
 
     # Select best model and plot new forecasts.
     best = results["mape"].idxmin()
@@ -279,8 +296,9 @@ def main():
 
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
-    plt.title(CITY + " order = " + str(order))
-    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
+    plt.title(CITY + "; order = " + str(order))
+    plot_residuals(model_fit, 20, 300,
+                   CITY + "; Residuals; order = %s" % str(order))
 
     # Test overfitted model.
     plt.show()
@@ -298,7 +316,8 @@ def main():
     model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
                            plot_insample=False)
     plt.title(CITY + " order = " + str(order))
-    plot_residuals(model_fit, 20, 400, "Residuals; order = %s" % str(order))
+    plot_residuals(model_fit, 20, 300,
+                   CITY + "; Residuals; order = %s" % str(order))
 
 
 if __name__ == '__main__':
