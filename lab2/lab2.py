@@ -13,7 +13,7 @@ from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 import numpy as np
 import seaborn
 
-CITY = "Wien"
+CITY = "Torino"
 
 
 def read_file(filename):
