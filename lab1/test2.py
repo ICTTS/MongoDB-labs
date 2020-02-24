@@ -76,31 +76,11 @@ def main():
         all_enter = 0
         for i in range(0, n-2):
             for j in range(0, n-2):
-                '''for k in range(n):
+                for k in range(n):
                     for w in range(n):
                         all_exit += all_pair.count([[x + (i * dx), y +(j * dy)], [x + (k * dx), y + (w * dy)]])
                         all_enter += all_pair.count([[x + (k * dx), y + (w * dy)],[x + (i * dx), y +(j * dy)]])
-                load = all_exit - all_enter'''
-                if hour == 5:
-                    load = random.randint(int(maxload/2.15), int(maxload/1.85))
-                elif hour == 11:
-                    load = random.randint(int(maxload / 3), int(maxload / 1.5))
-                elif hour == 17:
-                    load = random.randint(int(maxload / 4), int(maxload / 1.2))
-                else:
-                    load = random.randint(int(maxload / 3.2), int(maxload / 1.27))
-
-                if j + -1*(3/4)*i > 21:
-                    load = random.randint(int(maxload/2.05), int(maxload/2))
-                if i + j < 10:
-                    load = random.randint(int(maxload / 2.10), int(maxload / 1.9))
-                if i + j > 50:
-                    load = random.randint(int(maxload / 2.10), int(maxload / 2))
-                if (j - 2.5*i) < -44:
-                    load = random.randint(int(maxload / 2.05), int(maxload / 1.95))
-                if i < 4:
-                    load = random.randint(int(maxload / 2.05), int(maxload / 1.95))
-
+                load = all_exit - all_enter
                 d = {
                     "type": "Feature",
                     "properties": {"load": load + random.randint(5, 10), "maxload": maxload},
