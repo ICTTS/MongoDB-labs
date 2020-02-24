@@ -11,7 +11,7 @@ from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 import numpy as np
 import seaborn
 
-CITY = "Torino"
+CITY = "Wien"
 
 
 def read_file(filename):
@@ -37,7 +37,7 @@ class RunArima(object):
     def run(self, shift=0):
         """Run the model.
 
-        shift = 1: shifting training window
+        shift = 1: sliding training window
         shift = 0: expanding training window
         """
         history = [t for t in self.train]
@@ -171,26 +171,55 @@ def main():
     plt.ylabel("Partial Autocorrelation")
 
     # ARIMA model test
-    p = 5  # Looking at the PACF
+    p = 4  # Looking at the PACF
     d = 0  # Because it is stationary
     q = 2  # A guess
+
+    shift = 0
     order = (p, d, q)
-    model = ARIMA(df["rental"], order=order)
-    model_fit = model.fit(disp=True)
+    results = {"mape": []}
+    X = df.rental.values.astype(float)
+    train_size = 24*7  # One week
+    test_size = 24*7  # One week
+    N = train_size
+    my_arima = RunArima(X, train_size, test_size, p, d, q)
+    my_arima.run(shift=0)
+    results["mape"].append(my_arima.mape)
     plt.figure(constrained_layout=True)
-    plt.plot(df["rental"])
-    plt.plot(model_fit.fittedvalues)
-    plt.grid(which='both')
-    plt.legend(["Data", "Fitted"])
-    plt.title(CITY + "; Real and fitted data; order = %s" % str(order))
-    plt.xlabel("Hours")
+    xaxis = range(N, N + test_size)
+    plt.plot(xaxis, my_arima.test, label="Test data")
+    plt.plot(xaxis, my_arima.predictions, label="Predictions")
+    plt.xlabel('Hours')
     plt.ylabel("Number of rentals")
+    plt.grid(which='both')
+    if shift == 0:
+        win = "Expanding window"
+    elif shift == 1:
+        win = "Sliding window"
+    plt.title("%s; order = %s; " % (CITY, str(order)) + r'N$_{\mathrm{train}}$'
+              + " = %s;\n %s; MAPE = %s" % (str(N), win,
+              str(round(my_arima.mape, 4))))
+    print(results)
+    plt.legend()
 
-    # Redisuals
-    plot_residuals(model_fit, 20, 300,
-                   CITY + "; Residuals; order = %s" % str(order))
+    # Plot residuals of test dataset
+    ax, fig = plt.subplots(constrained_layout=True)
+    n_bins = 15
+    xlim = 150
+    residuals = [x-y for x, y in zip(my_arima.test, my_arima.predictions)]
+    residuals = pd.DataFrame(residuals)
+    residuals.plot(c='r', title=CITY + "; Residuals; order = %s" % str(order),
+                   legend=False)
+    fig, ax = plt.subplots(constrained_layout=True)
+    residuals.plot(ax=ax, title=CITY + "; Residuals; order = %s" % str(order),
+                   kind='kde', legend=False)
+    residuals.plot(ax=ax, color='#aabad7', edgecolor='white', kind='hist',
+                   density=True, bins=n_bins)
+    ax.legend(["KDE", "Density %s bins" % n_bins])
+    plt.xlim([-xlim, xlim])
+    plt.ylim([0, 0.027])
 
-    # Start ARIMA training processes.
+    # Start ARIMA tuning processes.
     print("Starting ARIMA model.""")
     X = df.rental.values.astype(float)
     train_size = 24*7  # One week
@@ -244,7 +273,7 @@ def main():
     fig, ax = plt.subplots(constrained_layout=True)
     ax = seaborn.heatmap(heat_df_mape, cmap='GnBu', annot=True, fmt='.4f')
     plt.title(CITY + '; Mean absolute percentage error')
-    plt.show()
+
     # Select best model (lower MAPE) and plot new forecasts.
     best = results["mape"].idxmin()
     p = results.loc[best]['p'].astype(int)
@@ -286,7 +315,7 @@ def main():
     plt.xticks(train_size_list)
     plt.xlabel(r'N$_{\mathrm{train}}$' + ' (hours)')
     plt.ylabel("MAPE")
-    plt.legend(["Expanding window", "Shifting window"])
+    plt.legend(["Expanding window", "Sliding window"])
     plt.grid(which='both')
 
     # Select best model
@@ -316,7 +345,7 @@ def main():
         win = "Expanding window"
     elif shift == 1:
         win = "Sliding window"
-    plt.title("%s; order = %s " % (CITY, str(order)) + r'N$_{\mathrm{train}}$'
+    plt.title("%s; order = %s; " % (CITY, str(order)) + r'N$_{\mathrm{train}}$'
               + " = %s;\n %s; MAPE = %s" % (str(N), win,
               str(round(my_arima.mape, 4))))
     print(results)
@@ -339,6 +368,24 @@ def main():
     plt.title(CITY + "; order = " + str(order))
     plot_residuals(model_fit, 20, 300,
                    CITY + "; Residuals; order = %s" % str(order))
+
+    # Plot residuals of test dataset
+    ax, fig = plt.subplots(constrained_layout=True)
+    n_bins = 15
+    xlim = 150
+    residuals = [x-y for x, y in zip(my_arima.test, my_arima.predictions)]
+    residuals = pd.DataFrame(residuals)
+    residuals.plot(c='r', title=CITY + "; Residuals; order = %s" % str(order),
+                   legend=False)
+    fig, ax = plt.subplots(constrained_layout=True)
+    residuals.plot(ax=ax, title=CITY + "; Residuals; order = %s" % str(order),
+                   kind='kde', legend=False)
+    residuals.plot(ax=ax, color='#aabad7', edgecolor='white', kind='hist',
+                   density=True, bins=n_bins)
+    ax.legend(["KDE", "Density %s bins" % n_bins])
+    plt.xlim([-xlim, xlim])
+    plt.ylim([0, 0.027])
+    plt.savefig(fname='residual' + CITY, format='eps')
     plt.show()
 
     # Test overfitted model.
