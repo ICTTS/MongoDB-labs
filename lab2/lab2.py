@@ -34,7 +34,7 @@ class RunArima(object):
         self.train = X[0:self.train_size]
         self.test = X[self.train_size:self.train_size + self.test_size]
 
-    def run(self, shift=0):
+    def run(self, shift=0, steps=1):
         """Run the model.
 
         shift = 1: sliding training window
@@ -46,7 +46,7 @@ class RunArima(object):
         for t in range(self.test_size):
             model = ARIMA(history, order=(self.order))
             model_fit = model.fit(disp=0, maxiter=200, method='css')
-            y_hat = model_fit.forecast()[0]
+            y_hat = model_fit.forecast(steps)[0][-1]
             self.predictions.append(y_hat)
             history.append(self.test[t])
             if shift:
@@ -180,7 +180,7 @@ def main():
     test_size = 24*7  # One week
     N = train_size
     my_arima = RunArima(X, train_size, test_size, p, d, q)
-    my_arima.run(shift=0)
+    my_arima.run(shift=0, steps=1)
     results["mape"].append(my_arima.mape)
     plt.figure(constrained_layout=True)
     xaxis = range(N, N + test_size)
@@ -200,7 +200,6 @@ def main():
     plt.legend()
 
     # Plot residuals of test dataset
-    ax, fig = plt.subplots(constrained_layout=True)
     n_bins = 15
     xlim = 150
     residuals = [x-y for x, y in zip(my_arima.test, my_arima.predictions)]
@@ -215,6 +214,7 @@ def main():
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
     plt.ylim([0, 0.033])
+    plt.show()
 
     # Start ARIMA tuning processes.
     print("Starting ARIMA model.""")
@@ -381,6 +381,55 @@ def main():
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
     plt.ylim([0, 0.033])
+
+    # Different time horizons
+    plt.figure(constrained_layout=True, figsize=(21, 9))
+    results = {"h": [], "mape": []}
+    for steps in range(1, 25):
+        print("h = %d" % steps)
+        shift = 1
+        order = (p, d, q)
+        X = df.rental.values.astype(float)
+        train_size = 24*9  # One week
+        test_size = 24*7  # One week
+        N = train_size
+        my_arima = RunArima(X, train_size, test_size, p, d, q)
+        my_arima.run(shift=0, steps=steps)
+        xaxis = range(N, N + test_size)
+        if steps == 1:
+            plt.plot(xaxis, my_arima.test, label="Test data")
+            plt.plot(xaxis, my_arima.predictions, label="h = %d" % steps)
+            results["h"].append(steps)
+            results["mape"].append(my_arima.mape)
+        else:
+            plt.plot(xaxis[steps-1:], my_arima.predictions[0:-steps+1],
+                     label="h = %d" % steps)
+            results["h"].append(steps)
+            mae = mean_absolute_error(my_arima.test[steps-1:],
+                                      my_arima.predictions[0:-steps+1])
+            mape = mae/np.mean(my_arima.test[steps-1:])*100
+            results["mape"].append(mape)
+    h_results = pd.DataFrame(results)
+    plt.xlabel('Hours')
+    plt.ylabel("Number of rentals")
+    plt.grid(which='both')
+    if shift == 0:
+        win = "Expanding window"
+    elif shift == 1:
+        win = "Sliding window"
+    plt.title("%s; order = %s; " % (CITY, str(order)) + r'N$_{\mathrm{train}}$'
+              + " = %s;\n %s" % (str(N), win))
+    print(results)
+    plt.legend()
+
+    plt.figure(constrained_layout=True)
+    plt.plot(h_results['h'], h_results['mape'], '-o')
+    plt.xlabel('h')
+    plt.xticks(h_results['h'].astype(int))
+    plt.ylabel('MAPE')
+    plt.title('MAPE vs h')
+    plt.grid(which='both')
+    plt.show()
 
     # Test overfitted model.
     order = (26, 0, 1)
