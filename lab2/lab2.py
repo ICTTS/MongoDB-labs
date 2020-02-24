@@ -49,7 +49,6 @@ class RunArima(object):
             y_hat = model_fit.forecast()[0]
             self.predictions.append(y_hat)
             history.append(self.test[t])
-            # print('predicted=%f, expected=%f' % (y_hat, history[-1]))
             if shift:
                 history = history[1:]
 
@@ -59,8 +58,6 @@ class RunArima(object):
         N = len(self.test)
         summer = [abs((a - b)/a) for a, b in zip(self.test, self.predictions)]
         self.mpe = 100/N * np.sum(summer)
-        # print(np.sum(summer))
-        # time.sleep(20)
         self.r2_score = r2_score(self.test, self.predictions)
 
     def plot_arima(self, fig_number):
@@ -91,7 +88,7 @@ def plot_residuals(model_fit, n_bins=20, xlim=4000, title="Residuals"):
     plt.title(title)
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
-    plt.ylim([0, 0.027])
+    plt.ylim([0, 0.033])
 
 
 def read_csv(filename):
@@ -217,7 +214,7 @@ def main():
                    density=True, bins=n_bins)
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
-    plt.ylim([0, 0.027])
+    plt.ylim([0, 0.033])
 
     # Start ARIMA tuning processes.
     print("Starting ARIMA model.""")
@@ -350,7 +347,6 @@ def main():
               str(round(my_arima.mape, 4))))
     print(results)
     plt.legend()
-    plt.show()
 
     # Final model predictions
     model = ARIMA(df["rental"], order=(order))
@@ -384,9 +380,7 @@ def main():
                    density=True, bins=n_bins)
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
-    plt.ylim([0, 0.027])
-    plt.savefig(fname='residual' + CITY, format='eps')
-    plt.show()
+    plt.ylim([0, 0.033])
 
     # Test overfitted model.
     order = (26, 0, 1)
