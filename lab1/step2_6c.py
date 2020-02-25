@@ -44,18 +44,12 @@ def main():
     start_time = time.mktime(datetime.datetime.strptime(start, "%d/%m/%Y").timetuple())
     end_time = time.mktime(datetime.datetime.strptime(end, "%d/%m/%Y").timetuple())
     fascie_orarie = [0, 6, 12, 18]
-    array = ['#800000', '#8d0000', '#990000', '#a60000', '#b30000', '#c00000', '#cc0000', '#d90000', '#e60000',
-             '#f20000', '#ff0000', '#ff1000', '#ff2100', '#ff3200', '#ff4200', '#ff5200', '#ff6300', '#ff7400',
-             '#ff8400', '#ff9400', '#ffa500', '#ffae00', '#ffb700', '#ffc000', '#ffc900', '#ffd200', '#ffdb00',
-             '#ffe400', '#ffed00', '#fff600', '#ffff00', '#e6ff00', '#ccff00', '#b2ff00', '#99ff00', '#80ff00',
-             '#66ff00', '#4dff00', '#33ff00', '#1aff00', '#00ff00', '#00f200', '#00e600', '#00d900', '#00cc00',
-             '#00c000', '#00b300', '#00a600', '#009900', '#008d00', '#008d19', '#009933', '#00a64d', '#00b366',
-             '#00c080', '#00cc99', '#00d9b3', '#00e6cc', '#00f2e5', '#00ffff', '#00e6ff', '#00ccff', '#00b3ff',
-             '#0099ff', '#0080ff', '#0066ff', '#004cff', '#0033ff', '#001aff', '#0000ff', '#0c08fb', '#1710f7',
-             '#2317f3', '#2e1fef', '#3a27eb', '#452fe6', '#5137e2', '#5d3ede', '#6846da', '#744ed6', '#8053d8',
-             '#8c58db', '#985edd', '#a563e0', '#b168e2', '#bd6de4', '#c972e7', '#d678e9', '#e27dec', '#ee82ee',
-             '#e375e3', '#d868d8', '#cd5bcd', '#c24ec2', '#b741b7', '#ac34ac', '#a127a1', '#961a96', '#8b0d8b',
-             '#800080']
+
+    'chromajs generated colors: '
+    array = ['#00008b', '#0f0f8f', '#191b93', '#212597', '#272f9b', '#2c389f', '#3141a2', '#364aa5', '#3a53a7',
+             '#3d5caa', '#4165ab', '#446eac', '#4777ad', '#4a80ac', '#4d8aaa', '#5093a6', '#549da0', '#59a795',
+             '#62b084', '#71b971', '#82c065', '#91c760', '#a0ce5e', '#aed55f', '#bcdc62', '#c9e366', '#d6ea6a',
+             '#e2f170', '#eff876', '#fbff7c']
     for hour in fascie_orarie:
         coursor = collection.aggregate(
             [
@@ -97,32 +91,7 @@ def main():
 
         for pair in all_pair:
             load = all_pair.count(pair)
-            c = random.randint(1, 99)
-            '''d = {
-                "type": "Feature",
-                "properties": {"load": load, "maxload": maxload, "color": array[c]},
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": [
-                        pair[0],
-                        pair[0]
-                    ]
-                }
-            }
-            d2 = {
-                "type": "Feature",
-                "properties": {"load": load, "maxload": maxload, "color": array[c]},
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": [
-                        pair[1],
-                        pair[1]
-                    ]
-                }
-            }
-            if d not in data and d2 not in data:
-                data.append(d)
-                data.append(d2)'''
+            c = load
             d = {
                 "type": "Feature",
                 "properties": {"load": load, "maxload": maxload, "color": array[c]},
@@ -134,7 +103,6 @@ def main():
                     ]
                 }
             }
-
             if d not in data:
                 data.append(d)
         filename = "data_" + str(hour) + ".json"
