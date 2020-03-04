@@ -22,18 +22,16 @@ def get_collection():
     db = client['carsharing']
     db.authenticate('ictts', 'Ictts16!')
     collection = db[COLLECTION]
-    print('connected')
     return collection
 
 
 def main():
     """Define main function."""
     # Torino 45 - 7.576 , 45 - 7.78 , 45.142 - 7.576 , 45.142 - 7.78
-    # 0.004495 verso nord e 0.006358 verso est
-    dx = 0.006358
-    dy = 0.004495
-    x = 7.576
-    y = 45
+    dx = 0.006358  # East variation of 500 m
+    dy = 0.004495  # North variation of 500 m
+    x = 7.576  # East coordinates
+    y = 45  # North coordinates
     density = [[0] * 32 for i in range(32)]
     collection = get_collection()
     START_HOUR = 18
@@ -79,7 +77,5 @@ def main():
                                                             density[i][j]))
 
 
-#  7.576,45.0,0 7.582357999999999,45.0,0 7.582357999999999,45.004495,
-#  0 7.576,45.004495,0 7.576,45.0,0
 if __name__ == '__main__':
     main()

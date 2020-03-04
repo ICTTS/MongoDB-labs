@@ -38,6 +38,7 @@ def get_collection(coll):
 
 
 def actual_rentals(collection, city, start_time, end_time):
+    """Get filtered rentals."""
     my_collection = list(collection.aggregate([
         {'$match': {
                 '$and': [
@@ -76,6 +77,7 @@ def actual_rentals(collection, city, start_time, end_time):
 
 
 def actual_parkings(collection, city, start_time, end_time):
+    """Get filtered parkings."""
     my_collection = list(collection.aggregate([
         {'$match': {
             '$and': [
@@ -107,6 +109,7 @@ def actual_parkings(collection, city, start_time, end_time):
 
 
 def loop():
+    """Compute mean, std, percentile and plot data."""
     days_list = list(range(31))
     start = "01/10/2017"
     start_time = time.mktime(datetime.datetime.strptime(start,
@@ -166,8 +169,8 @@ def loop():
             ax.plot(mean_minus, c=(0, 0.4470, 0.7410), ls='--')
             plt.xlabel("Day")
             plt.ylabel("Minutes")
-            plt.legend(["Mean", "Mean ± std", "Median", str(PERC) +
-                        "° Percentile"], loc=1)
+            plt.legend(["Mean", "Mean +- std", "Median", str(PERC) +
+                        ". Percentile"], loc=1)
             plt.title(coll + " in " + city)
             plt.xticks(ticks=range(0, 31), labels=range(1, 32))
             plt.grid(which='both')
