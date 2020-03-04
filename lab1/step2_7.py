@@ -7,7 +7,7 @@ a) Extract those valid rentals for which there is also the data for alternative
 
 b) Consider one alternative transport system, e.g., public transports. Take the
    duration, and divide it into time bins, e.g., [0,5)min, [5,10)min,
-   [10,15)min, … Compute then the number of rentals for each bin, i.e., the
+   [10,15)min,... Compute then the number of rentals for each bin, i.e., the
    probability of seeing a rental given the duration of public transport would
    be in a given interval. Plot the obtained histogram, and try to comment the
    results.
@@ -26,13 +26,11 @@ CITY = 'Torino'
 low_limit = 3*60  # Two minutes
 high_limit = 3*60*60  # Three hours
 
-# Pt
-# Cosa ha senso? Ci sono numeri altissimi nell'elenco, errori?
 high_limit_pt = 5*60*60
 
 
 def get_collection():
-    """Connect to database."""
+    """Connect to database and return collection."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',
@@ -110,10 +108,8 @@ def pt_duration():
     return (my_collection[0]['pt_array'], my_collection[0]['w_array'])
 
 
-def make_hist(array, bins, color, titled):
+def make_hist(array, bins, color, titled, xlim, ylim):
     """Plot a histogram."""
-    # print(pt_duration_array[-1]) mmmmm c'è una piccola coda di ouliers che
-    # non si vede a 228 circa neanche mettendo il bin, magari farli comunque?
     fig, ax = plt.subplots(constrained_layout=False, figsize=(15, 8))
     plt.hist(np.array(array), bins, ec='black', color=color)
     plt.xlabel(titled + ' duration (minutes)')
@@ -121,6 +117,9 @@ def make_hist(array, bins, color, titled):
     plt.title('No. rentals given the alternative ' + titled + ' trip'
               ' duration')
     plt.xticks(ticks=bins, labels=bins)
+    plt.xlim([0, xlim])
+    plt.ylim([0, ylim])
+    plt.grid(which='both')
     plt.savefig('step2_7' + titled + '.eps', format='eps')
 
 
@@ -132,9 +131,9 @@ def main():
     blue = (0, 0.4470, 0.7410)
     orange = (0.8500, 0.3250, 0.0980)
     make_hist(pt_duration_array, list(range(0, 105, 5)), blue,
-              'public transport')
+              'public transport', 150, 4200)
     make_hist(w_duration_array, list(range(0, 155, 5)), orange,
-              'walking')
+              'walking', 150, 4200)
     plt.show()
 
 
