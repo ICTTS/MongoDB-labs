@@ -13,7 +13,6 @@ import datetime
 
 COLLECTION = ['PermanentBookings', 'PermanentParkings']
 
-# Connection to database.
 client = pm.MongoClient('bigdatadb.polito.it',
                         ssl=True,
                         authSource='carsharing',
@@ -102,7 +101,7 @@ for coll in COLLECTION:
                     }
                  }]))
 
-        num_of_documents = len(my_collection)  # Number of documents
+        num_of_documents = len(my_collection)
 
         # Points for grouping in CDF
         starting_point = 0

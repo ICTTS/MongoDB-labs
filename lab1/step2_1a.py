@@ -11,12 +11,11 @@ import datetime
 
 COLLECTION = ['PermanentParkings', 'PermanentBookings']
 
-# Connection to database.
 client = pm.MongoClient('bigdatadb.polito.it',
                         ssl=True,
                         authSource='carsharing',
                         tlsAllowInvalidCertificates=True)
-db = client['carsharing']  # Choose the DB to use
+db = client['carsharing']
 db.authenticate('ictts', 'Ictts16!')
 
 start = "01/10/2017"

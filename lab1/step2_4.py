@@ -16,7 +16,7 @@ CITY_LIST = ["Torino", "Wien", "Seattle"]
 
 
 def get_collection(coll_name):
-    """Connect to database."""
+    """Connect to database and return collection."""
     client = pm.MongoClient('bigdatadb.polito.it',
                             ssl=True,
                             authSource='carsharing',

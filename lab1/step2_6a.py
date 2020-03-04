@@ -43,7 +43,6 @@ def main():
 
     df = pd.DataFrame(data, columns=['longitude', 'latitude', 'Hour'])
 
-    # TODO partizione mattino pomeriggio sera notte
     mattino = list(range(6, 12))
     pomeriggio = list(range(12, 18))
     sera = list(range(18, 24))

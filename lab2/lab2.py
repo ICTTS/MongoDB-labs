@@ -61,7 +61,7 @@ class RunArima(object):
         self.r2_score = r2_score(self.test, self.predictions)
 
     def plot_arima(self, fig_number):
-        """Plot results."""
+        """Plot ARIMA predictions."""
         plt.figure(fig_number, constrained_layout=True)
         xaxis = range(self.train_size, self.train_size + self.test_size)
         plt.plot(xaxis, self.predictions, label="order = %s"
@@ -114,7 +114,7 @@ def main():
     print("--- Start ---\n")
     df = read_file(CITY + ".csv")
     df = df.rename(columns={'count': 'rental'})
-    df["hour"] = df["hour"].values.astype(int)  # Convert hour to int
+    df["hour"] = df["hour"].values.astype(int)  # Convert to int
 
     # Find missing values.
     missing_values = find_missing(df["hour"])
@@ -214,13 +214,12 @@ def main():
     ax.legend(["KDE", "Density %s bins" % n_bins])
     plt.xlim([-xlim, xlim])
     plt.ylim([0, 0.033])
-    plt.show()
 
     # Start ARIMA tuning processes.
     print("Starting ARIMA model.""")
     X = df.rental.values.astype(float)
     train_size = 24*7  # One week
-    test_size = 24*7  # One week
+    test_size = 24*7   # One week
     p_list = [0, 1, 2, 3, 4, 5, 6]
     q_list = [0, 1, 2]
     d_list = [0]
@@ -281,7 +280,7 @@ def main():
 
     results = {"N": [], "shift": [], "mse": [], "mpe": [], "mape": []}
 
-    # Change training window size.
+    # Tuning training window size.
     train_size_list = [24*x for x in range(3, 16)]
     test_size = 24*7
     for train_size in train_size_list:
@@ -298,11 +297,9 @@ def main():
             except Exception:
                 print(p, d, q, "\n")
 
-    # Convert results into a dataframe.
+    # Plot MAPE vs training window size.
     results = pd.DataFrame(results)
     print(results, "\n\n\n")
-
-    # Plot MAPE vs training window size
     mape_expanding = results.pivot(index='N', columns='shift', values='mape')
     fig, ax = plt.subplots(constrained_layout=True)
     print(mape_expanding)
@@ -315,13 +312,13 @@ def main():
     plt.legend(["Expanding window", "Sliding window"])
     plt.grid(which='both')
 
-    # Select best model
+    # Select best Ntrain by looking at the lowest MAPE.
     best = results["mape"].idxmin()
     N = results.loc[best]['N'].astype(int)
     shift = results.loc[best]['shift'].astype(int)
     print("BEST: N: %d, shift: %d" % (N, shift))
 
-    # Final model
+    # Final model with tuned (p, q, d), tuned Ntrain and best window strategy.
     (p, d, q) = order
     results = {"N": N, "shift": shift, "p": p, "d": d, "q": q,
                "mse": [], "mpe": [], "mape": []}
@@ -348,23 +345,6 @@ def main():
     print(results)
     plt.legend()
 
-    # Final model predictions
-    model = ARIMA(df["rental"], order=(order))
-    model_fit = model.fit(disp=True, maxiter=200, method="css-mle")
-    plt.figure(constrained_layout=True)
-    plt.plot(df["rental"])
-    plt.plot(model_fit.fittedvalues)
-    plt.grid(which='both')
-    plt.legend(["Data", "Fitted"])
-    fig, ax = plt.subplots(constrained_layout=True)
-    df.rental.iloc[650:].plot(ax=ax)
-
-    model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
-                           plot_insample=False)
-    plt.title(CITY + "; order = " + str(order))
-    plot_residuals(model_fit, 20, 300,
-                   CITY + "; Residuals; order = %s" % str(order))
-
     # Plot residuals of test dataset
     ax, fig = plt.subplots(constrained_layout=True)
     n_bins = 15
@@ -382,7 +362,7 @@ def main():
     plt.xlim([-xlim, xlim])
     plt.ylim([0, 0.033])
 
-    # Different time horizons
+    # Different time horizons predictions.
     plt.figure(constrained_layout=True, figsize=(21, 9))
     results = {"h": [], "mape": []}
     for steps in range(1, 25):
@@ -429,9 +409,25 @@ def main():
     plt.ylabel('MAPE')
     plt.title('MAPE vs h')
     plt.grid(which='both')
-    plt.show()
 
-    # Test overfitted model.
+    # Predictions on best model trained on entire dataset.
+    model = ARIMA(df["rental"], order=(order))
+    model_fit = model.fit(disp=True, maxiter=200, method="css-mle")
+    plt.figure(constrained_layout=True)
+    plt.plot(df["rental"])
+    plt.plot(model_fit.fittedvalues)
+    plt.grid(which='both')
+    plt.legend(["Data", "Fitted"])
+    fig, ax = plt.subplots(constrained_layout=True)
+    df.rental.iloc[650:].plot(ax=ax)
+
+    model_fit.plot_predict(ax=ax, start=650, end=800, dynamic=False,
+                           plot_insample=False)
+    plt.title(CITY + "; order = " + str(order))
+    plot_residuals(model_fit, 20, 300,
+                   CITY + "; Residuals; order = %s" % str(order))
+
+    # Predictions on complex model trained on entire dataset.
     order = (26, 0, 1)
     model = ARIMA(df["rental"], order=(order))
     model_fit = model.fit(disp=True, maxiter=400, method="css-mle")
@@ -453,3 +449,4 @@ def main():
 if __name__ == '__main__':
     main()
     plt.show()
+    print("--- END ---\n")

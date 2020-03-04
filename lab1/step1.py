@@ -25,8 +25,6 @@ print("permanent parkings: ", permanent_parkings.estimated_document_count())
 print("active bookings: ", active_bookings.estimated_document_count())
 print("active parkings: ", active_parkings.estimated_document_count())
 
-# Permanent booking and parking similar because of tot n of cars ideally one
-# car should be booked then parked.
 print("\n- For which cities the system is collecting data?")
 print(permanent_bookings.distinct('city'))
 
@@ -58,12 +56,7 @@ print(len(permanent_parkings.distinct("plate", {"city": "Torino"})))
 print(len(permanent_parkings.distinct("plate", {"city": "Wien"})))
 print(len(permanent_parkings.distinct("plate", {"city": "Seattle"})))
 
-# print("edu purpose : ", time.time(), ' ', time.gmtime(start))
-# 12/13/2016 @ 5:38pm (UTC) UK time
-# 12/13/2016 @ 6:38pm (UTC) IT time
-
 print("\n- Bookings on December 2017?")
-
 start_date = "01/12/2017"
 start_time = time.mktime(datetime.datetime.strptime(start_date,
                                                     "%d/%m/%Y").timetuple())
@@ -77,8 +70,7 @@ for i in city:
 
     print('booking on december 2017 in ', i, ' are: ', len(list(dec_city)))
 
-
-# TODO alternative modes only for Turin and Wien
+# Alternative modes for Turin and Wien
 torino_altern = list(permanent_bookings.aggregate([
     {'$match': {'$and': [
         {'city': 'Torino'},
